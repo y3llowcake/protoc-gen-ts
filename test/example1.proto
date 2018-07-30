@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package foo.bar;
+
+import "google/protobuf/any.proto";
+import "example2.proto";
+
+enum AEnum1 {
+  A = 0;
+  B = 2;
+}
+
+// Intentionally, same as below to test namespacing.
+message example2 {
+  int32 aint32 = 1;
+}
+
+message example1 {
+  // Scalars.
+	double adouble = 1;
+	float afloat = 2;
+	int32 aint32 = 3;
+	int64 aint64 = 4;
+	uint32 auint32 = 5;
+	uint32 auint64 = 6;
+	sint32 asint32 = 7;
+	sint64 asint64 = 8;
+	fixed32 afixed32 = 9;
+	fixed64 afixed64 = 10;
+	sfixed32 asfixed32 = 11;
+	sfixed64 asfixed64 = 12;
+	bool abool = 13;
+	string astring = 14;
+	bytes abytes = 15;
+
+  // Enums
+  enum AEnum2 {
+    C = 0;
+    D = 10;
+  }
+  AEnum1 aenum1 = 20;
+  AEnum2 aenum2 = 21;
+  fiz.baz.AEnum2 aenum22 = 22;
+
+  // Repeated
+  repeated string manystring = 30;
+  repeated int64 manyint64 = 31;
+
+  // Nested Messages / namespace test.
+  message example2 {
+    string astring = 1;
+  }
+  example2 aexample2 = 40;
+  .foo.bar.example2 aexample22 = 41;
+  .fiz.baz.example2 aexample23 = 42;
+
+  map<string, string> amap = 51;
+  map<string, fiz.baz.example2> amap2 = 52;
+
+  int64 outoforder = 49;
+
+  oneof aoneof {
+    string oostring = 60;
+    int32 ooint = 61;
+  }
+
+  google.protobuf.Any anany = 80;
+}
+
+service ExampleService {
+  rpc OneToTwo(example1) returns (example2) {}
+}

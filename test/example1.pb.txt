@@ -1,0 +1,49 @@
+adouble: 13.37
+afloat: 100.1
+aint32: 1
+aint64: 12
+auint32: 123
+auint64: 1234
+asint32: 12345
+asint64: 123456
+afixed32: 1234567
+afixed64: 12345678
+asfixed32: 123456789
+asfixed64: 1234567890
+abool: true
+astring: "foobar"
+abytes: "hello world"
+
+aenum1: B
+aenum2: D
+aenum22: Z
+
+manystring: "ms1"
+manystring: "ms2"
+manystring: "ms3"
+manyint64: 1
+manyint64: 2
+manyint64: 3
+
+aexample2 {
+  astring: "zomg"
+}
+aexample22 {
+  aint32: 123
+}
+aexample23 {
+  zomg: -12
+}
+
+amap {
+  key: "k1"
+  value: "v1"
+}
+amap {
+  key: "k2"
+  value: "v2"
+}
+
+outoforder: 1
+
+oostring: "oneofstring"

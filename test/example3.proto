@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+message Donkey {
+  string hi = 1;
+}
+
+message Funky {
+  message Monkey {
+    string hi = 1;
+  }
+  Monkey monkey = 1;
+  Donkey dokey = 2;
+}

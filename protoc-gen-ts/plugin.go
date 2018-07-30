@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/golang/protobuf/proto"
-	// desc "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	desc "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	ppb "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -46,8 +47,37 @@ func gen(req *ppb.CodeGeneratorRequest) *ppb.CodeGeneratorResponse {
 	for _, f := range req.FileToGenerate {
 		fileToGenerate[f] = true
 	}
+	genService := strings.Contains(req.GetParameter(), "plugin=grpc")
+
+	rootns := NewEmptyNamespace()
+	for _, fdp := range req.ProtoFile {
+		if fdp.GetSyntax() != "proto3" {
+			panic(fmt.Errorf("unsupported syntax: %s in file %s", fdp.GetSyntax(), fdp.GetName()))
+		}
+		rootns.Parse(fdp)
+		// panic(rootns.PrettyPrint()) // for debuggling
+
+		if !fileToGenerate[*fdp.Name] {
+			continue
+		}
+		f := &ppb.CodeGeneratorResponse_File{}
+
+		fext := filepath.Ext(*fdp.Name)
+		fname := strings.TrimSuffix(*fdp.Name, fext) + "_pb.ts"
+		f.Name = proto.String(fname)
+
+		b := &bytes.Buffer{}
+		w := &writer{b, 0}
+		writeFile(w, fdp, rootns, genService)
+		f.Content = proto.String(b.String())
+		resp.File = append(resp.File, f)
+	}
+
 	panic("poop")
 	return resp
+}
+
+func writeFile(w *writer, fdp *desc.FileDescriptorProto, rootNs *Namespace, genService bool) {
 }
 
 // writer is a little helper for output printing. It indents code

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+import "example3.proto";
+
+package fiz.baz;
+
+message example2 {
+  int32 zomg = 1;
+}
+
+enum AEnum2 {
+  Z = 0;
+}
+
+message refexample3 {
+  Funky funky = 1;
+}
