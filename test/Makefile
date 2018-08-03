@@ -1,7 +1,7 @@
 all: test
 
 test: gen
-	# TODO run node.
+	tsc gen-src/*.ts
 	echo "\033[1mINTEGRATION TEST PASSED\033[0m"
 
 gen:

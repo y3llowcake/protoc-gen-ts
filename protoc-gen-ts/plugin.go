@@ -89,10 +89,86 @@ func writeFile(w *writer, fdp *desc.FileDescriptorProto, rootNs *Namespace, genS
 	}
 }
 
+type field struct {
+	fd *desc.FieldDescriptorProto
+}
+
+func newField(fd *desc.FieldDescriptorProto, ns *Namespace) *field {
+	f := &field{
+		fd: fd,
+	}
+	return f
+}
+
+func (f field) isOneofMember() bool {
+	return false
+	// return f.fd.OneofIndex != nil
+}
+
+func (f field) varName() string {
+	return f.fd.GetName()
+}
+
+func (f field) tsType() string {
+	switch t := *f.fd.Type; t {
+	case desc.FieldDescriptorProto_TYPE_STRING, desc.FieldDescriptorProto_TYPE_BYTES:
+		return "string"
+	case desc.FieldDescriptorProto_TYPE_INT64,
+		desc.FieldDescriptorProto_TYPE_INT32, desc.FieldDescriptorProto_TYPE_UINT64, desc.FieldDescriptorProto_TYPE_UINT32, desc.FieldDescriptorProto_TYPE_SINT64, desc.FieldDescriptorProto_TYPE_SINT32, desc.FieldDescriptorProto_TYPE_FIXED32, desc.FieldDescriptorProto_TYPE_FIXED64, desc.FieldDescriptorProto_TYPE_SFIXED32, desc.FieldDescriptorProto_TYPE_SFIXED64:
+		return "number" // TODO BigInt
+	case desc.FieldDescriptorProto_TYPE_FLOAT, desc.FieldDescriptorProto_TYPE_DOUBLE:
+		return "number"
+	case desc.FieldDescriptorProto_TYPE_BOOL:
+		return "boolean"
+	case desc.FieldDescriptorProto_TYPE_MESSAGE:
+		// return f.typePhpNs + "\\" + f.typePhpName
+		return "number"
+	case desc.FieldDescriptorProto_TYPE_ENUM:
+		// return f.typePhpNs + "\\" + specialPrefix + f.typePhpName + "_t"
+		return "number"
+	default:
+		panic(fmt.Errorf("unexpected proto type while converting to php type: %v", t))
+	}
+
+}
+
+func (f field) labeledType() string {
+	/*if f.isMap {
+		k, v := f.mapFields()
+		kt := k.phpType()
+		if f.isMapWithBoolKey() {
+			kt = fmt.Sprintf("%s\\bool_map_key_t", libNsInternal)
+		}
+		return fmt.Sprintf("dict<%s, %s>", kt, v.labeledType())
+	}*/
+	if f.isRepeated() {
+		return f.tsType() + "[]"
+	}
+	if f.fd.GetType() == desc.FieldDescriptorProto_TYPE_MESSAGE {
+		return f.tsType()
+	}
+	return f.tsType()
+}
+
+func (f field) isRepeated() bool {
+	return *f.fd.Label == desc.FieldDescriptorProto_LABEL_REPEATED
+}
+
 func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, prefixNames []string) {
+	fields := []*field{}
+	for _, fd := range dp.Field {
+		fields = append(fields, newField(fd, ns))
+	}
+
 	nextNames := append(prefixNames, dp.GetName())
 	name := strings.Join(nextNames, "_")
-	w.p("class %s {", name)
+	w.p("export class %s {", name)
+	for _, f := range fields {
+		if f.isOneofMember() {
+			continue
+		}
+		w.p("%s: %s;", f.varName(), f.labeledType())
+	}
 	w.p("}")
 	w.ln()
 }
