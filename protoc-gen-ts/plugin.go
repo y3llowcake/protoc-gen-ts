@@ -209,23 +209,31 @@ func (f field) mapFields() (*field, *field) {
 
 func (f field) tsType() string {
 	switch t := *f.fd.Type; t {
-	case desc.FieldDescriptorProto_TYPE_STRING, desc.FieldDescriptorProto_TYPE_BYTES:
+	case desc.FieldDescriptorProto_TYPE_STRING:
 		return "string"
+	case desc.FieldDescriptorProto_TYPE_BYTES:
+		return "Uint8Array"
 	case desc.FieldDescriptorProto_TYPE_INT64,
-		desc.FieldDescriptorProto_TYPE_INT32, desc.FieldDescriptorProto_TYPE_UINT64, desc.FieldDescriptorProto_TYPE_UINT32, desc.FieldDescriptorProto_TYPE_SINT64, desc.FieldDescriptorProto_TYPE_SINT32, desc.FieldDescriptorProto_TYPE_FIXED32, desc.FieldDescriptorProto_TYPE_FIXED64, desc.FieldDescriptorProto_TYPE_SFIXED32, desc.FieldDescriptorProto_TYPE_SFIXED64:
-		return "number" // TODO BigInt
-	case desc.FieldDescriptorProto_TYPE_FLOAT, desc.FieldDescriptorProto_TYPE_DOUBLE:
+		desc.FieldDescriptorProto_TYPE_UINT64,
+		desc.FieldDescriptorProto_TYPE_SINT64,
+		desc.FieldDescriptorProto_TYPE_FIXED64,
+		desc.FieldDescriptorProto_TYPE_SFIXED64:
+		return "bigint"
+	case desc.FieldDescriptorProto_TYPE_INT32,
+		desc.FieldDescriptorProto_TYPE_UINT32,
+		desc.FieldDescriptorProto_TYPE_SINT32,
+		desc.FieldDescriptorProto_TYPE_FIXED32,
+		desc.FieldDescriptorProto_TYPE_SFIXED32:
+		return "number"
+	case desc.FieldDescriptorProto_TYPE_FLOAT,
+		desc.FieldDescriptorProto_TYPE_DOUBLE:
 		return "number"
 	case desc.FieldDescriptorProto_TYPE_BOOL:
 		return "boolean"
 	case desc.FieldDescriptorProto_TYPE_MESSAGE,
 		desc.FieldDescriptorProto_TYPE_GROUP:
-		// return f.typePhpNs + "\\" + f.typePhpName
 		return f.typeTsName + " | null"
-		// return "number"
 	case desc.FieldDescriptorProto_TYPE_ENUM:
-		// return f.typePhpNs + "\\" + specialPrefix + f.typePhpName + "_t"
-		//return "number"
 		return f.typeTsName
 	default:
 		panic(fmt.Errorf("unexpected proto type while converting to php type: %v", t))
@@ -242,22 +250,31 @@ func (f field) defaultValue() string {
 		return "[]"
 	}
 	switch t := *f.fd.Type; t {
-	case desc.FieldDescriptorProto_TYPE_STRING, desc.FieldDescriptorProto_TYPE_BYTES:
+	case desc.FieldDescriptorProto_TYPE_STRING:
 		return `""`
+	case desc.FieldDescriptorProto_TYPE_BYTES:
+		return `new Uint8Array(0)`
 	case desc.FieldDescriptorProto_TYPE_INT64,
-		desc.FieldDescriptorProto_TYPE_INT32, desc.FieldDescriptorProto_TYPE_UINT64, desc.FieldDescriptorProto_TYPE_UINT32, desc.FieldDescriptorProto_TYPE_SINT64, desc.FieldDescriptorProto_TYPE_SINT32, desc.FieldDescriptorProto_TYPE_FIXED32, desc.FieldDescriptorProto_TYPE_FIXED64, desc.FieldDescriptorProto_TYPE_SFIXED32, desc.FieldDescriptorProto_TYPE_SFIXED64:
-		return "0" // TODO BigInt
-	case desc.FieldDescriptorProto_TYPE_FLOAT, desc.FieldDescriptorProto_TYPE_DOUBLE:
+		desc.FieldDescriptorProto_TYPE_UINT64,
+		desc.FieldDescriptorProto_TYPE_SINT64,
+		desc.FieldDescriptorProto_TYPE_FIXED64,
+		desc.FieldDescriptorProto_TYPE_SFIXED64:
+		return "0n"
+	case desc.FieldDescriptorProto_TYPE_INT32,
+		desc.FieldDescriptorProto_TYPE_UINT32,
+		desc.FieldDescriptorProto_TYPE_SINT32,
+		desc.FieldDescriptorProto_TYPE_FIXED32,
+		desc.FieldDescriptorProto_TYPE_SFIXED32:
+		return "0"
+	case desc.FieldDescriptorProto_TYPE_FLOAT,
+		desc.FieldDescriptorProto_TYPE_DOUBLE:
 		return "0.0"
 	case desc.FieldDescriptorProto_TYPE_BOOL:
 		return "false"
 	case desc.FieldDescriptorProto_TYPE_MESSAGE,
 		desc.FieldDescriptorProto_TYPE_GROUP:
-		// return f.typePhpNs + "\\" + f.typePhpName
-		// return "0"
 		return "null"
 	case desc.FieldDescriptorProto_TYPE_ENUM:
-		// return f.typePhpNs + "\\" + specialPrefix + f.typePhpName + "_t"
 		return "0"
 	default:
 		panic(fmt.Errorf("unexpected proto type while converting to php type: %v", t))
