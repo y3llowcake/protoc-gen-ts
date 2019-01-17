@@ -3,10 +3,19 @@
 
 export class Donkey {
   hi: string;
+
+  constructor() {
+    this.hi = "";
+  }
 }
 
 export class Funky {
   monkey: number;
   dokey: number;
+
+  constructor() {
+    this.monkey = 0;
+    this.dokey = 0;
+  }
 }
 

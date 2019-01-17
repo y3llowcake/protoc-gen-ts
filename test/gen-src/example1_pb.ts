@@ -3,6 +3,10 @@
 
 export class example2 {
   aint32: number;
+
+  constructor() {
+    this.aint32 = 0;
+  }
 }
 
 export class example1 {
@@ -29,11 +33,43 @@ export class example1 {
   aexample2: number;
   aexample22: number;
   aexample23: number;
-  amap: number[];
-  amap2: number[];
+  amap: Map<string, string>;
+  amap2: Map<string, number>;
   outoforder: number;
   oostring: string;
   ooint: number;
   anany: number;
+
+  constructor() {
+    this.adouble = 0.0;
+    this.afloat = 0.0;
+    this.aint32 = 0;
+    this.aint64 = 0;
+    this.auint32 = 0;
+    this.auint64 = 0;
+    this.asint32 = 0;
+    this.asint64 = 0;
+    this.afixed32 = 0;
+    this.afixed64 = 0;
+    this.asfixed32 = 0;
+    this.asfixed64 = 0;
+    this.abool = false;
+    this.astring = "";
+    this.abytes = "";
+    this.aenum1 = 0;
+    this.aenum2 = 0;
+    this.aenum22 = 0;
+    this.manystring = [];
+    this.manyint64 = [];
+    this.aexample2 = 0;
+    this.aexample22 = 0;
+    this.aexample23 = 0;
+    this.amap = new Map<string, string>();
+    this.amap2 = new Map<string, number>();
+    this.outoforder = 0;
+    this.oostring = "";
+    this.ooint = 0;
+    this.anany = 0;
+  }
 }
 

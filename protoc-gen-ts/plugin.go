@@ -89,13 +89,46 @@ func writeFile(w *writer, fdp *desc.FileDescriptorProto, rootNs *Namespace, genS
 	}
 }
 
+type oneof struct {
+	descriptor                                                  *desc.OneofDescriptorProto
+	fields                                                      []*field
+	name, interfaceName, enumTypeName, classPrefix, notsetClass string
+	// v2
+}
+
 type field struct {
-	fd *desc.FieldDescriptorProto
+	fd              *desc.FieldDescriptorProto
+	typeDescriptor  interface{}
+	typeNs          *Namespace
+	typeEnumDefault string
+	isMap           bool
+	oneof           *oneof
+	typeFqProtoName string
 }
 
 func newField(fd *desc.FieldDescriptorProto, ns *Namespace) *field {
 	f := &field{
 		fd: fd,
+	}
+	if fd.GetTypeName() != "" {
+		typeNs, typeName, i := ns.FindFullyQualifiedName(fd.GetTypeName())
+		f.typeFqProtoName = typeNs + "." + typeName
+		//f.typePhpNs, f.typePhpName = toPhpName(typeNs, typeName)
+		f.typeDescriptor = i
+		f.typeNs = ns.FindFullyQualifiedNamespace(typeNs)
+		if dp, ok := f.typeDescriptor.(*desc.DescriptorProto); ok {
+			if dp.GetOptions().GetMapEntry() {
+				f.isMap = true
+			}
+		}
+		if ed, ok := f.typeDescriptor.(*desc.EnumDescriptorProto); ok {
+			for _, v := range ed.Value {
+				if v.GetNumber() == 0 {
+					f.typeEnumDefault = v.GetName()
+					break
+				}
+			}
+		}
 	}
 	return f
 }
@@ -107,6 +140,13 @@ func (f field) isOneofMember() bool {
 
 func (f field) varName() string {
 	return f.fd.GetName()
+}
+
+func (f field) mapFields() (*field, *field) {
+	dp := f.typeDescriptor.(*desc.DescriptorProto)
+	keyField := newField(dp.Field[0], f.typeNs)
+	valueField := newField(dp.Field[1], f.typeNs)
+	return keyField, valueField
 }
 
 func (f field) tsType() string {
@@ -132,15 +172,41 @@ func (f field) tsType() string {
 
 }
 
-func (f field) labeledType() string {
-	/*if f.isMap {
+func (f field) defaultValue() string {
+	if f.isMap {
 		k, v := f.mapFields()
-		kt := k.phpType()
-		if f.isMapWithBoolKey() {
-			kt = fmt.Sprintf("%s\\bool_map_key_t", libNsInternal)
-		}
-		return fmt.Sprintf("dict<%s, %s>", kt, v.labeledType())
-	}*/
+		return fmt.Sprintf("new Map<%s, %s>()", k.tsType(), v.labeledType())
+	}
+	if f.isRepeated() {
+		return "[]"
+	}
+	switch t := *f.fd.Type; t {
+	case desc.FieldDescriptorProto_TYPE_STRING, desc.FieldDescriptorProto_TYPE_BYTES:
+		return `""`
+	case desc.FieldDescriptorProto_TYPE_INT64,
+		desc.FieldDescriptorProto_TYPE_INT32, desc.FieldDescriptorProto_TYPE_UINT64, desc.FieldDescriptorProto_TYPE_UINT32, desc.FieldDescriptorProto_TYPE_SINT64, desc.FieldDescriptorProto_TYPE_SINT32, desc.FieldDescriptorProto_TYPE_FIXED32, desc.FieldDescriptorProto_TYPE_FIXED64, desc.FieldDescriptorProto_TYPE_SFIXED32, desc.FieldDescriptorProto_TYPE_SFIXED64:
+		return "0" // TODO BigInt
+	case desc.FieldDescriptorProto_TYPE_FLOAT, desc.FieldDescriptorProto_TYPE_DOUBLE:
+		return "0.0"
+	case desc.FieldDescriptorProto_TYPE_BOOL:
+		return "false"
+	case desc.FieldDescriptorProto_TYPE_MESSAGE:
+		// return f.typePhpNs + "\\" + f.typePhpName
+		return "0"
+	case desc.FieldDescriptorProto_TYPE_ENUM:
+		// return f.typePhpNs + "\\" + specialPrefix + f.typePhpName + "_t"
+		return "0"
+	default:
+		panic(fmt.Errorf("unexpected proto type while converting to php type: %v", t))
+	}
+
+}
+
+func (f field) labeledType() string {
+	if f.isMap {
+		k, v := f.mapFields()
+		return fmt.Sprintf("Map<%s, %s>", k.tsType(), v.labeledType())
+	}
 	if f.isRepeated() {
 		return f.tsType() + "[]"
 	}
@@ -169,6 +235,17 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, prefixN
 		}
 		w.p("%s: %s;", f.varName(), f.labeledType())
 	}
+	w.ln()
+	w.p("constructor() {")
+	for _, f := range fields {
+		if f.isOneofMember() {
+			continue
+		}
+		w.p("this.%s = %s;", f.varName(), f.defaultValue())
+	}
+
+	w.p("}")
+
 	w.p("}")
 	w.ln()
 }

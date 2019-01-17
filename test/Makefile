@@ -1,7 +1,7 @@
 all: test
 
 test: gen
-	tsc gen-src/*.ts
+	tsc --lib es6 --strict gen-src/*.ts
 	echo "\033[1mINTEGRATION TEST PASSED\033[0m"
 
 gen:

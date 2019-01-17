@@ -3,9 +3,17 @@
 
 export class example2 {
   zomg: number;
+
+  constructor() {
+    this.zomg = 0;
+  }
 }
 
 export class refexample3 {
   funky: number;
+
+  constructor() {
+    this.funky = 0;
+  }
 }
 
