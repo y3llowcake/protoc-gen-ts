@@ -9,9 +9,12 @@ import (
 
 // Names is a tree of structures and enums defined in a single namespace.
 type Names struct {
-	parent     *Names
-	Children   map[string]*Names
-	descriptor interface{} // This should be set on every node of the tree.
+	parent   *Names
+	Children map[string]*Names
+
+	// These should be set on every node of the tree
+	descriptor     interface{}
+	fileDescriptor *desc.FileDescriptorProto
 }
 
 func newNames(parent *Names) *Names {
@@ -110,27 +113,33 @@ func (n *Namespace) Parse(fdp *desc.FileDescriptorProto) {
 
 	// Top level enums.
 	for _, edp := range fdp.EnumType {
-		childns.Names.get(true, *edp.Name).descriptor = edp
+		name := childns.Names.get(true, *edp.Name)
+		name.descriptor = edp
+		name.fileDescriptor = fdp
 	}
 
 	// Messages, recurse.
 	for _, dp := range fdp.MessageType {
 		childNames := childns.Names.get(true, *dp.Name)
 		childNames.descriptor = fdp.MessageType
-		childNames.parseDescriptor(dp)
+		childNames.fileDescriptor = fdp
+		childNames.parseDescriptor(dp, fdp)
 	}
 }
 
-func (n *Names) parseDescriptor(dp *desc.DescriptorProto) {
+func (n *Names) parseDescriptor(dp *desc.DescriptorProto, fdp *desc.FileDescriptorProto) {
 
 	for _, edp := range dp.EnumType {
-		n.get(true, *edp.Name).descriptor = edp
+		name := n.get(true, *edp.Name)
+		name.descriptor = edp
+		name.fileDescriptor = fdp
 	}
 
 	for _, dp := range dp.NestedType {
 		childNames := n.get(true, *dp.Name)
 		childNames.descriptor = dp
-		childNames.parseDescriptor(dp)
+		childNames.fileDescriptor = fdp
+		childNames.parseDescriptor(dp, fdp)
 	}
 }
 
@@ -150,29 +159,30 @@ func mustFullyQualified(fqn string) {
 // resolves it to a named entity and returns the proto name split at the
 // namespace boundary.
 //   e.g. ".foo" "bar.baz"
-// and also returns the descriptor.
-func (n *Namespace) FindFullyQualifiedName(fqn string) (string, string, interface{}) {
+// and also returns the type descriptor and file descriptor in which it is
+// contained.
+func (n *Namespace) FindFullyQualifiedName(fqn string) (string, string, interface{}, *desc.FileDescriptorProto) {
 	mustFullyQualified(fqn)
-	ns, name, i := n.find(fqn, true)
+	ns, name, i, fdp := n.find(fqn, true)
 	if i == nil {
 		panic("couldn't resolve name: " + fqn)
 	}
 	ns = strings.TrimSuffix(ns, ".")
-	return ns, name, i
+	return ns, name, i, fdp
 }
 
-func (n *Namespace) find(fqn string, checkParent bool) (string, string, interface{}) {
+func (n *Namespace) find(fqn string, checkParent bool) (string, string, interface{}, *desc.FileDescriptorProto) {
 	if strings.HasPrefix(fqn, n.Fqn) {
 		// This name might be in our namespace
 		relative := strings.TrimPrefix(fqn, n.Fqn)
 		if name := n.Names.get(false, strings.Split(relative, ".")...); name != nil {
-			return n.Fqn, relative, name.descriptor
+			return n.Fqn, relative, name.descriptor, name.fileDescriptor
 		}
 		// It may also be in a decendant namespace.
 		for _, childns := range n.Children {
-			rns, rname, i := childns.find(fqn, false)
+			rns, rname, i, fdp := childns.find(fqn, false)
 			if rns != "" {
-				return rns, rname, i
+				return rns, rname, i, fdp
 			}
 		}
 
@@ -182,5 +192,5 @@ func (n *Namespace) find(fqn string, checkParent bool) (string, string, interfac
 	if checkParent && n.parent != nil {
 		return n.parent.FindFullyQualifiedName(fqn)
 	}
-	return "", "", nil
+	return "", "", nil, nil
 }
