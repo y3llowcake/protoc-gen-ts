@@ -9,13 +9,6 @@ var Donkey = /** @class */ (function () {
     return Donkey;
 }());
 exports.Donkey = Donkey;
-var Funky_Monkey = /** @class */ (function () {
-    function Funky_Monkey() {
-        this.hi = "";
-    }
-    return Funky_Monkey;
-}());
-exports.Funky_Monkey = Funky_Monkey;
 var Funky = /** @class */ (function () {
     function Funky() {
         this.monkey = null;
@@ -23,4 +16,14 @@ var Funky = /** @class */ (function () {
     }
     return Funky;
 }());
+exports.Funky = Funky;
+(function (Funky) {
+    var Monkey = /** @class */ (function () {
+        function Monkey() {
+            this.hi = "";
+        }
+        return Monkey;
+    }());
+    Funky.Monkey = Monkey;
+})(Funky = exports.Funky || (exports.Funky = {}));
 exports.Funky = Funky;

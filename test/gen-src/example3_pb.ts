@@ -9,21 +9,23 @@ export class Donkey {
   }
 }
 
-export class Funky_Monkey {
-  hi: string;
-
-  constructor() {
-    this.hi = "";
-  }
-}
-
 export class Funky {
-  monkey: Funky_Monkey | null;
+  monkey: Funky.Monkey | null;
   dokey: Donkey | null;
 
   constructor() {
     this.monkey = null;
     this.dokey = null;
+  }
+}
+
+export namespace Funky {
+  export class Monkey {
+    hi: string;
+
+    constructor() {
+      this.hi = "";
+    }
   }
 }
 

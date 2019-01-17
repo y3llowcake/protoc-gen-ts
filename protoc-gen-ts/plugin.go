@@ -143,7 +143,8 @@ func newField(fd *desc.FieldDescriptorProto, ns *Namespace) *field {
 }
 
 func toTsName(ns, name string) string {
-	return strings.Replace(name, ".", "_", -1)
+	// return strings.Replace(name, ".", "_", -1)
+	return name
 }
 
 func (f field) isOneofMember() bool {
@@ -239,28 +240,23 @@ func (f field) isRepeated() bool {
 }
 
 func writeEnum(w *writer, edp *desc.EnumDescriptorProto, prefixNames []string) {
-	name := strings.Join(append(prefixNames, edp.GetName()), "_")
-	w.p("export const enum %s {", name)
+	// name := strings.Join(append(prefixNames, edp.GetName()), "_")
+	if len(prefixNames) > 0 {
+		w.p("export namespace %s {", strings.Join(prefixNames, "."))
+	}
+	w.p("export const enum %s {", edp.GetName())
 	for _, v := range edp.Value {
 		w.p("%s = %d,", v.GetName(), v.GetNumber())
 	}
 	w.p("}")
+	if len(prefixNames) > 0 {
+		w.p("}") // namespace
+	}
 	w.ln()
 }
 
 func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, prefixNames []string) {
 	nextNames := append(prefixNames, dp.GetName())
-	name := strings.Join(nextNames, "_")
-
-	// Write enums.
-	for _, edp := range dp.EnumType {
-		writeEnum(w, edp, nextNames)
-	}
-
-	// Nested types.
-	for _, ndp := range dp.NestedType {
-		writeDescriptor(w, ndp, ns, nextNames)
-	}
 
 	// Wrap fields.
 	fields := []*field{}
@@ -268,7 +264,11 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, prefixN
 		fields = append(fields, newField(fd, ns))
 	}
 
-	w.p("export class %s {", name)
+	if len(prefixNames) > 0 {
+		w.p("export namespace %s {", strings.Join(prefixNames, "."))
+	}
+
+	w.p("export class %s {", dp.GetName())
 	for _, f := range fields {
 		if f.isOneofMember() {
 			continue
@@ -283,11 +283,23 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, prefixN
 		}
 		w.p("this.%s = %s;", f.varName(), f.defaultValue())
 	}
+	w.p("}") // constructor
+	w.p("}") // class
 
-	w.p("}")
-
-	w.p("}")
+	if len(prefixNames) > 0 {
+		w.p("}") // namespace
+	}
 	w.ln()
+
+	// Write enums.
+	for _, edp := range dp.EnumType {
+		writeEnum(w, edp, nextNames)
+	}
+
+	// Nested types.
+	for _, ndp := range dp.NestedType {
+		writeDescriptor(w, ndp, ns, nextNames)
+	}
 }
 
 // writer is a little helper for output printing. It indents code

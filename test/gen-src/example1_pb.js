@@ -9,29 +9,6 @@ var example2 = /** @class */ (function () {
     return example2;
 }());
 exports.example2 = example2;
-var example1_example2 = /** @class */ (function () {
-    function example1_example2() {
-        this.astring = "";
-    }
-    return example1_example2;
-}());
-exports.example1_example2 = example1_example2;
-var example1_AmapEntry = /** @class */ (function () {
-    function example1_AmapEntry() {
-        this.key = "";
-        this.value = "";
-    }
-    return example1_AmapEntry;
-}());
-exports.example1_AmapEntry = example1_AmapEntry;
-var example1_Amap2Entry = /** @class */ (function () {
-    function example1_Amap2Entry() {
-        this.key = "";
-        this.value = null;
-    }
-    return example1_Amap2Entry;
-}());
-exports.example1_Amap2Entry = example1_Amap2Entry;
 var example1 = /** @class */ (function () {
     function example1() {
         this.adouble = 0.0;
@@ -65,4 +42,36 @@ var example1 = /** @class */ (function () {
     }
     return example1;
 }());
+exports.example1 = example1;
+(function (example1) {
+    var example2 = /** @class */ (function () {
+        function example2() {
+            this.astring = "";
+        }
+        return example2;
+    }());
+    example1.example2 = example2;
+})(example1 = exports.example1 || (exports.example1 = {}));
+exports.example1 = example1;
+(function (example1) {
+    var AmapEntry = /** @class */ (function () {
+        function AmapEntry() {
+            this.key = "";
+            this.value = "";
+        }
+        return AmapEntry;
+    }());
+    example1.AmapEntry = AmapEntry;
+})(example1 = exports.example1 || (exports.example1 = {}));
+exports.example1 = example1;
+(function (example1) {
+    var Amap2Entry = /** @class */ (function () {
+        function Amap2Entry() {
+            this.key = "";
+            this.value = null;
+        }
+        return Amap2Entry;
+    }());
+    example1.Amap2Entry = Amap2Entry;
+})(example1 = exports.example1 || (exports.example1 = {}));
 exports.example1 = example1;

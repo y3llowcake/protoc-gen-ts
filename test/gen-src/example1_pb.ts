@@ -14,39 +14,6 @@ export class example2 {
   }
 }
 
-export const enum example1_AEnum2 {
-  C = 0,
-  D = 10,
-}
-
-export class example1_example2 {
-  astring: string;
-
-  constructor() {
-    this.astring = "";
-  }
-}
-
-export class example1_AmapEntry {
-  key: string;
-  value: string;
-
-  constructor() {
-    this.key = "";
-    this.value = "";
-  }
-}
-
-export class example1_Amap2Entry {
-  key: string;
-  value: example2 | null;
-
-  constructor() {
-    this.key = "";
-    this.value = null;
-  }
-}
-
 export class example1 {
   adouble: number;
   afloat: number;
@@ -64,11 +31,11 @@ export class example1 {
   astring: string;
   abytes: string;
   aenum1: AEnum1;
-  aenum2: example1_AEnum2;
+  aenum2: example1.AEnum2;
   aenum22: AEnum2;
   manystring: string[];
   manyint64: number[];
-  aexample2: example1_example2 | null;
+  aexample2: example1.example2 | null;
   aexample22: example2 | null;
   aexample23: example2 | null;
   amap: Map<string, string>;
@@ -106,6 +73,47 @@ export class example1 {
     this.outoforder = 0;
     this.oostring = "";
     this.ooint = 0;
+  }
+}
+
+export namespace example1 {
+  export const enum AEnum2 {
+    C = 0,
+    D = 10,
+  }
+}
+
+export namespace example1 {
+  export class example2 {
+    astring: string;
+
+    constructor() {
+      this.astring = "";
+    }
+  }
+}
+
+export namespace example1 {
+  export class AmapEntry {
+    key: string;
+    value: string;
+
+    constructor() {
+      this.key = "";
+      this.value = "";
+    }
+  }
+}
+
+export namespace example1 {
+  export class Amap2Entry {
+    key: string;
+    value: example2 | null;
+
+    constructor() {
+      this.key = "";
+      this.value = null;
+    }
   }
 }
 
