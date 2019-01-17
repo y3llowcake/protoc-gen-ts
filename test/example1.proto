@@ -64,7 +64,7 @@ message example1 {
     int32 ooint = 61;
   }
 
-  google.protobuf.Any anany = 80;
+  // google.protobuf.Any anany = 80;
 }
 
 service ExampleService {

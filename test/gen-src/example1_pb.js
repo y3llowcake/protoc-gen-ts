@@ -9,6 +9,29 @@ var example2 = /** @class */ (function () {
     return example2;
 }());
 exports.example2 = example2;
+var example1_example2 = /** @class */ (function () {
+    function example1_example2() {
+        this.astring = "";
+    }
+    return example1_example2;
+}());
+exports.example1_example2 = example1_example2;
+var example1_AmapEntry = /** @class */ (function () {
+    function example1_AmapEntry() {
+        this.key = "";
+        this.value = "";
+    }
+    return example1_AmapEntry;
+}());
+exports.example1_AmapEntry = example1_AmapEntry;
+var example1_Amap2Entry = /** @class */ (function () {
+    function example1_Amap2Entry() {
+        this.key = "";
+        this.value = null;
+    }
+    return example1_Amap2Entry;
+}());
+exports.example1_Amap2Entry = example1_Amap2Entry;
 var example1 = /** @class */ (function () {
     function example1() {
         this.adouble = 0.0;
@@ -31,15 +54,14 @@ var example1 = /** @class */ (function () {
         this.aenum22 = 0;
         this.manystring = [];
         this.manyint64 = [];
-        this.aexample2 = 0;
-        this.aexample22 = 0;
-        this.aexample23 = 0;
+        this.aexample2 = null;
+        this.aexample22 = null;
+        this.aexample23 = null;
         this.amap = new Map();
         this.amap2 = new Map();
         this.outoforder = 0;
         this.oostring = "";
         this.ooint = 0;
-        this.anany = 0;
     }
     return example1;
 }());

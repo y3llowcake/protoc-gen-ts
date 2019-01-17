@@ -11,7 +11,7 @@ var example2 = /** @class */ (function () {
 exports.example2 = example2;
 var refexample3 = /** @class */ (function () {
     function refexample3() {
-        this.funky = 0;
+        this.funky = null;
     }
     return refexample3;
 }());

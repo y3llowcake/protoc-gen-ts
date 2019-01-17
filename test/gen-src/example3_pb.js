@@ -9,10 +9,17 @@ var Donkey = /** @class */ (function () {
     return Donkey;
 }());
 exports.Donkey = Donkey;
+var Funky_Monkey = /** @class */ (function () {
+    function Funky_Monkey() {
+        this.hi = "";
+    }
+    return Funky_Monkey;
+}());
+exports.Funky_Monkey = Funky_Monkey;
 var Funky = /** @class */ (function () {
     function Funky() {
-        this.monkey = 0;
-        this.dokey = 0;
+        this.monkey = null;
+        this.dokey = null;
     }
     return Funky;
 }());
