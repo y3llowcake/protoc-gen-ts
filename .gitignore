@@ -1,2 +1,4 @@
 *.swp
 bazel-*
+*.js
+node_modules
