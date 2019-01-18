@@ -1,7 +1,7 @@
 all: test
 
 test: gen
-	tsc --lib es6 --target esnext --experimentalBigInt --strict gen-src/*.ts
+	tsc --lib es6,esnext.BigInt --target esnext --strict gen-src/*.ts
 	echo "\033[1mINTEGRATION TEST PASSED\033[0m"
 
 gen:

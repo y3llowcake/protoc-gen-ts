@@ -4,6 +4,17 @@ export class example2 {
     constructor() {
         this.aint32 = 0;
     }
+    MergeFrom(d) {
+        while (!d.isEOF()) {
+            var [fn, wt] = d.readTag();
+            switch (fn) {
+                case 1:
+                    break;
+                default:
+                    d.skipWireType(wt);
+            }
+        }
+    }
 }
 export class example1 {
     constructor() {
@@ -36,11 +47,93 @@ export class example1 {
         this.oostring = "";
         this.ooint = 0;
     }
+    MergeFrom(d) {
+        while (!d.isEOF()) {
+            var [fn, wt] = d.readTag();
+            switch (fn) {
+                case 1:
+                    this.adouble = d.readDouble();
+                    break;
+                case 2:
+                    this.afloat = d.readFloat();
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    break;
+                case 6:
+                    break;
+                case 7:
+                    break;
+                case 8:
+                    break;
+                case 9:
+                    break;
+                case 10:
+                    break;
+                case 11:
+                    break;
+                case 12:
+                    break;
+                case 13:
+                    this.abool = d.readBool();
+                    break;
+                case 14:
+                    this.astring = d.readString();
+                    break;
+                case 15:
+                    break;
+                case 20:
+                    break;
+                case 21:
+                    break;
+                case 22:
+                    break;
+                case 30:
+                    break;
+                case 31:
+                    break;
+                case 40:
+                    break;
+                case 41:
+                    break;
+                case 42:
+                    break;
+                case 51:
+                    break;
+                case 52:
+                    break;
+                case 49:
+                    break;
+                case 60:
+                    this.oostring = d.readString();
+                    break;
+                case 61:
+                    break;
+                default:
+                    d.skipWireType(wt);
+            }
+        }
+    }
 }
 (function (example1) {
     class example2 {
         constructor() {
             this.astring = "";
+        }
+        MergeFrom(d) {
+            while (!d.isEOF()) {
+                var [fn, wt] = d.readTag();
+                switch (fn) {
+                    case 1:
+                        this.astring = d.readString();
+                        break;
+                    default:
+                        d.skipWireType(wt);
+                }
+            }
         }
     }
     example1.example2 = example2;
@@ -51,6 +144,21 @@ export class example1 {
             this.key = "";
             this.value = "";
         }
+        MergeFrom(d) {
+            while (!d.isEOF()) {
+                var [fn, wt] = d.readTag();
+                switch (fn) {
+                    case 1:
+                        this.key = d.readString();
+                        break;
+                    case 2:
+                        this.value = d.readString();
+                        break;
+                    default:
+                        d.skipWireType(wt);
+                }
+            }
+        }
     }
     example1.AmapEntry = AmapEntry;
 })(example1 || (example1 = {}));
@@ -59,6 +167,20 @@ export class example1 {
         constructor() {
             this.key = "";
             this.value = null;
+        }
+        MergeFrom(d) {
+            while (!d.isEOF()) {
+                var [fn, wt] = d.readTag();
+                switch (fn) {
+                    case 1:
+                        this.key = d.readString();
+                        break;
+                    case 2:
+                        break;
+                    default:
+                        d.skipWireType(wt);
+                }
+            }
         }
     }
     example1.Amap2Entry = Amap2Entry;

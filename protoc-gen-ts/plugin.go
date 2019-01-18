@@ -67,7 +67,12 @@ func gen(req *ppb.CodeGeneratorRequest) *ppb.CodeGeneratorResponse {
 		b := &bytes.Buffer{}
 		w := &writer{b, 0}
 
-		imports := writeFile(w, fdp, rootns, genService)
+		libMod := &modRef{
+			alias: "__pb__",
+			path:  "../../lib/protobuf",
+		}
+
+		imports := writeFile(w, fdp, rootns, libMod, genService)
 		content := strings.Replace(b.String(), importPlaceholder, imports, 1)
 		f.Content = proto.String(content)
 		resp.File = append(resp.File, f)
@@ -83,7 +88,7 @@ func tsFileName(fdp *desc.FileDescriptorProto) string {
 
 const importPlaceholder = "!!!IMPORT_PLACEHOLDER!!!"
 
-func writeFile(w *writer, fdp *desc.FileDescriptorProto, rootNs *Namespace, genService bool) string {
+func writeFile(w *writer, fdp *desc.FileDescriptorProto, rootNs *Namespace, libMod *modRef, genService bool) string {
 	ns := rootNs.FindFullyQualifiedNamespace("." + fdp.GetPackage())
 	mr := &moduleResolver{fdp, map[string]*modRef{}}
 	if ns == nil {
@@ -102,10 +107,10 @@ func writeFile(w *writer, fdp *desc.FileDescriptorProto, rootNs *Namespace, genS
 
 	// Messages, recurse.
 	for _, dp := range fdp.MessageType {
-		writeDescriptor(w, dp, ns, mr, nil)
+		writeDescriptor(w, dp, ns, mr, libMod, nil)
 	}
 
-	imports := ""
+	imports := fmt.Sprintf("import * as %s from \"%s\"\n", libMod.alias, libMod.path)
 	for _, mod := range mr.references {
 		imports += fmt.Sprintf("import * as %s from \"%s\"\n", mod.alias, mod.path)
 	}
@@ -300,6 +305,39 @@ func (f field) isRepeated() bool {
 	return *f.fd.Label == desc.FieldDescriptorProto_LABEL_REPEATED
 }
 
+func (f field) writeDecoder(w *writer, dec, wt string) {
+	if f.isMap {
+		// TODO
+		return
+	}
+	if f.fd.GetType() == desc.FieldDescriptorProto_TYPE_MESSAGE || f.fd.GetType() == desc.FieldDescriptorProto_TYPE_GROUP {
+		// TODO
+		return
+	}
+	reader := ""
+	switch f.fd.GetType() {
+	case desc.FieldDescriptorProto_TYPE_STRING:
+		reader = fmt.Sprintf("%s.readString()", dec)
+	case desc.FieldDescriptorProto_TYPE_BOOL:
+		reader = fmt.Sprintf("%s.readBool()", dec)
+	case desc.FieldDescriptorProto_TYPE_FLOAT:
+		reader = fmt.Sprintf("%s.readFloat()", dec)
+	case desc.FieldDescriptorProto_TYPE_DOUBLE:
+		reader = fmt.Sprintf("%s.readDouble()", dec)
+
+	default:
+		return
+		// panic(fmt.Errorf("unknown reader for fd type: %+v", f.fd.GetType())) // TODO
+
+	}
+	//if f.isOneOfMember() {
+	if !f.isRepeated() {
+		w.p("this.%s = %s;", f.varName(), reader)
+		return
+	}
+	// Repeated.
+}
+
 func writeEnum(w *writer, edp *desc.EnumDescriptorProto, prefixNames []string) {
 	// name := strings.Join(append(prefixNames, edp.GetName()), "_")
 	if len(prefixNames) > 0 {
@@ -316,7 +354,7 @@ func writeEnum(w *writer, edp *desc.EnumDescriptorProto, prefixNames []string) {
 	w.ln()
 }
 
-func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *moduleResolver, prefixNames []string) {
+func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *moduleResolver, libMod *modRef, prefixNames []string) {
 	nextNames := append(prefixNames, dp.GetName())
 
 	// Wrap fields.
@@ -329,7 +367,7 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 		w.p("export namespace %s {", strings.Join(prefixNames, "."))
 	}
 
-	w.p("export class %s {", dp.GetName())
+	w.p("export class %s implements %s.Message {", dp.GetName(), libMod.alias)
 	for _, f := range fields {
 		if f.isOneofMember() {
 			continue
@@ -345,6 +383,22 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 		w.p("this.%s = %s;", f.varName(), f.defaultValue())
 	}
 	w.p("}") // constructor
+
+	w.ln()
+	w.p("MergeFrom(d: %s.Internal.Decoder): void {", libMod.alias)
+	w.p("while (!d.isEOF()) {")
+	w.p("var [fn, wt] = d.readTag();")
+	w.p("switch(fn) {")
+	for _, f := range fields {
+		w.p("case %d:", f.fd.GetNumber())
+		f.writeDecoder(w, "d", "wt")
+		w.p("break;")
+	}
+	w.p("default:")
+	w.p("d.skipWireType(wt)")
+	w.p("}") // switch
+	w.p("}") // while
+	w.p("}") // MergeFrom
 	w.p("}") // class
 
 	if len(prefixNames) > 0 {
@@ -359,7 +413,7 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 
 	// Nested types.
 	for _, ndp := range dp.NestedType {
-		writeDescriptor(w, ndp, ns, mr, nextNames)
+		writeDescriptor(w, ndp, ns, mr, libMod, nextNames)
 	}
 }
 

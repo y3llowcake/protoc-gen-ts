@@ -4,9 +4,31 @@ export class example2 {
     constructor() {
         this.zomg = 0;
     }
+    MergeFrom(d) {
+        while (!d.isEOF()) {
+            var [fn, wt] = d.readTag();
+            switch (fn) {
+                case 1:
+                    break;
+                default:
+                    d.skipWireType(wt);
+            }
+        }
+    }
 }
 export class refexample3 {
     constructor() {
         this.funky = null;
+    }
+    MergeFrom(d) {
+        while (!d.isEOF()) {
+            var [fn, wt] = d.readTag();
+            switch (fn) {
+                case 1:
+                    break;
+                default:
+                    d.skipWireType(wt);
+            }
+        }
     }
 }

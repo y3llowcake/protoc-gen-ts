@@ -4,17 +4,54 @@ export class Donkey {
     constructor() {
         this.hi = "";
     }
+    MergeFrom(d) {
+        while (!d.isEOF()) {
+            var [fn, wt] = d.readTag();
+            switch (fn) {
+                case 1:
+                    this.hi = d.readString();
+                    break;
+                default:
+                    d.skipWireType(wt);
+            }
+        }
+    }
 }
 export class Funky {
     constructor() {
         this.monkey = null;
         this.dokey = null;
     }
+    MergeFrom(d) {
+        while (!d.isEOF()) {
+            var [fn, wt] = d.readTag();
+            switch (fn) {
+                case 1:
+                    break;
+                case 2:
+                    break;
+                default:
+                    d.skipWireType(wt);
+            }
+        }
+    }
 }
 (function (Funky) {
     class Monkey {
         constructor() {
             this.hi = "";
+        }
+        MergeFrom(d) {
+            while (!d.isEOF()) {
+                var [fn, wt] = d.readTag();
+                switch (fn) {
+                    case 1:
+                        this.hi = d.readString();
+                        break;
+                    default:
+                        d.skipWireType(wt);
+                }
+            }
         }
     }
     Funky.Monkey = Monkey;
