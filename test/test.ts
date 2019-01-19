@@ -1,12 +1,12 @@
-import * as fs from 'fs';
-import * as pb from '../lib/protobuf'
-import * as e1pb from './gen-src/example1_pb'
-import * as e2pb from './gen-src/example2_pb'
+import * as fs from "fs";
+import * as pb from "../lib/protobuf";
+import * as e1pb from "./gen-src/example1_pb";
+import * as e2pb from "./gen-src/example2_pb";
 
-import {diff} from 'deep-diff'
+import { diff } from "deep-diff";
 
 function repackFloat(n: number): number {
-	let a = new Float32Array(1);
+  let a = new Float32Array(1);
   a[0] = n;
   return a[0];
 }
@@ -62,8 +62,7 @@ function example1(): e1pb.example1 {
   return e;
 }
 
-
-let raw = fs.readFileSync('./gen-data/example1.pb.bin');
+let raw = fs.readFileSync("./gen-data/example1.pb.bin");
 let ua = new Uint8Array(raw.buffer, raw.byteOffset, raw.length);
 let got = new e1pb.example1();
 pb.Unmarshal(ua, got);
@@ -72,7 +71,7 @@ let diffs = diff(got, example1());
 if (diffs == null || diffs.length > 0) {
   console.log("found diffs");
   console.table(diffs);
-  throw new Error('found diffs');
+  throw new Error("found diffs");
 }
 
 console.log(got);
