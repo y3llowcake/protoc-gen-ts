@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-const genDebug = false
+const genDebug = true
 
 func main() {
 	var buf bytes.Buffer
@@ -305,35 +305,96 @@ func (f field) isRepeated() bool {
 	return *f.fd.Label == desc.FieldDescriptorProto_LABEL_REPEATED
 }
 
+var isPackable = map[desc.FieldDescriptorProto_Type]bool{
+	desc.FieldDescriptorProto_TYPE_INT64:    true,
+	desc.FieldDescriptorProto_TYPE_INT32:    true,
+	desc.FieldDescriptorProto_TYPE_UINT64:   true,
+	desc.FieldDescriptorProto_TYPE_UINT32:   true,
+	desc.FieldDescriptorProto_TYPE_SINT64:   true,
+	desc.FieldDescriptorProto_TYPE_SINT32:   true,
+	desc.FieldDescriptorProto_TYPE_FLOAT:    true,
+	desc.FieldDescriptorProto_TYPE_DOUBLE:   true,
+	desc.FieldDescriptorProto_TYPE_FIXED32:  true,
+	desc.FieldDescriptorProto_TYPE_SFIXED32: true,
+	desc.FieldDescriptorProto_TYPE_FIXED64:  true,
+	desc.FieldDescriptorProto_TYPE_SFIXED64: true,
+	desc.FieldDescriptorProto_TYPE_BOOL:     true,
+	desc.FieldDescriptorProto_TYPE_ENUM:     true,
+}
+
 func (f field) writeDecoder(w *writer, dec, wt string) {
 	if f.isMap {
 		// TODO
 		return
 	}
 	if f.fd.GetType() == desc.FieldDescriptorProto_TYPE_MESSAGE || f.fd.GetType() == desc.FieldDescriptorProto_TYPE_GROUP {
-		// TODO
+		if f.isRepeated() {
+			w.p("var obj = new %s();", f.typeTsName)
+			w.p("obj.MergeFrom(%s.readDecoder());", dec)
+			w.p("this.%s.push(obj)", f.varName())
+		} else {
+			// todo isoneof
+			w.p("if (this.%s == null) this.%s = new %s();", f.varName(), f.varName(), f.typeTsName)
+			w.p("this.%s.MergeFrom(%s.readDecoder());", f.varName(), dec)
+		}
 		return
 	}
 	reader := ""
 	switch f.fd.GetType() {
+
 	case desc.FieldDescriptorProto_TYPE_STRING:
 		reader = fmt.Sprintf("%s.readString()", dec)
-	case desc.FieldDescriptorProto_TYPE_BOOL:
-		reader = fmt.Sprintf("%s.readBool()", dec)
+	case desc.FieldDescriptorProto_TYPE_BYTES:
+		reader = fmt.Sprintf("%s.readBytes()", dec)
+	case desc.FieldDescriptorProto_TYPE_INT64,
+		desc.FieldDescriptorProto_TYPE_UINT64:
+		reader = fmt.Sprintf("%s.readVarint()", dec)
+	//case desc.FieldDescriptorProto_TYPE_INT32:
+	//	reader = fmt.Sprintf("%s.readVarint32Signed()", dec)
+	case desc.FieldDescriptorProto_TYPE_UINT32,
+		desc.FieldDescriptorProto_TYPE_INT32:
+		reader = fmt.Sprintf("%s.readVarint32()", dec)
+	case desc.FieldDescriptorProto_TYPE_SINT64:
+		reader = fmt.Sprintf("%s.readZigZag64()", dec)
+	case desc.FieldDescriptorProto_TYPE_SINT32:
+		reader = fmt.Sprintf("%s.readZigZag32()", dec)
 	case desc.FieldDescriptorProto_TYPE_FLOAT:
 		reader = fmt.Sprintf("%s.readFloat()", dec)
 	case desc.FieldDescriptorProto_TYPE_DOUBLE:
 		reader = fmt.Sprintf("%s.readDouble()", dec)
-
+	case desc.FieldDescriptorProto_TYPE_FIXED32:
+		reader = fmt.Sprintf("%s.readUint32()", dec)
+	case desc.FieldDescriptorProto_TYPE_SFIXED32:
+		reader = fmt.Sprintf("%s.readInt32()", dec)
+	case desc.FieldDescriptorProto_TYPE_FIXED64:
+		reader = fmt.Sprintf("%s.readUint64()", dec)
+	case desc.FieldDescriptorProto_TYPE_SFIXED64:
+		reader = fmt.Sprintf("%s.readInt64()", dec)
+	case desc.FieldDescriptorProto_TYPE_BOOL:
+		reader = fmt.Sprintf("%s.readBool()", dec)
+	case desc.FieldDescriptorProto_TYPE_ENUM:
+		reader = fmt.Sprintf("%s.readVarintAsNumber()", dec)
 	default:
-		return
-		// panic(fmt.Errorf("unknown reader for fd type: %+v", f.fd.GetType())) // TODO
-
+		panic(fmt.Errorf("unknown reader for fd type: %+v", f.fd.GetType()))
 	}
 	//if f.isOneOfMember() {
 	if !f.isRepeated() {
 		w.p("this.%s = %s;", f.varName(), reader)
 		return
+	}
+	packable := isPackable[f.fd.GetType()]
+	if packable {
+		w.p("if (%s == 2) {", wt)
+		w.p("var packed = %s.readDecoder();", dec)
+		w.p("while (!packed.isEOF()) {")
+		packedReader := strings.Replace(reader, dec, "packed", 1) // heh kinda hacky
+		w.p("this.%s.push(%s)", f.varName(), packedReader)
+		w.p("}")
+		w.p("} else {")
+	}
+	w.p("this.%s.push(%s)", f.varName(), reader)
+	if packable {
+		w.p("}")
 	}
 	// Repeated.
 }
@@ -391,10 +452,13 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 	w.p("switch(fn) {")
 	for _, f := range fields {
 		w.p("case %d:", f.fd.GetNumber())
+		w.pdebug("reading field:%d (%s) wt:${wt}", f.fd.GetNumber(), f.fd.GetName())
 		f.writeDecoder(w, "d", "wt")
+		w.pdebug("read field:%d (%s)", f.fd.GetNumber(), f.fd.GetName())
 		w.p("break;")
 	}
 	w.p("default:")
+	w.pdebug("skipping unknown field:${fn} wt:${wt}")
 	w.p("d.skipWireType(wt)")
 	w.p("}") // switch
 	w.p("}") // while
@@ -444,9 +508,9 @@ func (w *writer) ln() {
 	fmt.Fprintln(w.w)
 }
 
-func (w *writer) pdebug(format string, a ...interface{}) {
+func (w *writer) pdebug(f string, i ...interface{}) {
 	if !genDebug {
 		return
 	}
-	w.p(fmt.Sprintf(`console.log("PROTOC-DEBUG: %s");`, format), a...)
+	w.p("console.log(`[PROTOC-DEBUG] %s`);", fmt.Sprintf(f, i...))
 }

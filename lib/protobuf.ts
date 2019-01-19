@@ -8,6 +8,10 @@ export interface Message {
   MergeFrom(d: Internal.Decoder): void;
 }
 
+export function Unmarshal(raw: Uint8Array, m: Message): void {
+  m.MergeFrom(new Internal.Decoder(raw));
+}
+
 export namespace Internal {
   export class Decoder {
     private buf: Uint8Array;
@@ -66,14 +70,41 @@ export namespace Internal {
       return this.readVarintAsNumber() & 0xFFFFFFFF;
     }
 
+    readZigZag32(): number {
+      var i = this.readVarintAsNumber();
+      i |= (i & 0xFFFFFFFF);
+      return ((i >> 1) & 0x7FFFFFFF) ^ (-(i & 1));
+    }
+
+    readZigZag64(): bigint {
+      var i = this.readVarint();
+      return ((i >> 1n) & 0x7FFFFFFFFFFFFFFFn) ^ (-(i & 1n));
+    }
+
+    readInt64(): bigint {
+      var dv = this.readView(8);
+      return (BigInt(dv.getUint32(0, true)) << 32n) + BigInt(dv.getUint32(4, true));
+    }
+
+    readUint64(): bigint {
+      this.readView(8);
+      return 0n // TODO
+    }
+
+    readUint32(): number {
+      return this.readView(4).getUint32(0, true);
+    }
+
+    readInt32(): number {
+      return this.readView(4).getInt32(0, true);
+    }
+
     readFloat(): number {
-      var ua = this.readRaw(4);
-      return (new Float32Array(ua.buffer, ua.byteOffset, 1))[0];
+      return this.readView(4).getFloat32(0, true);
     }
 
     readDouble(): number {
-      var ua = this.readRaw(8);
-      return (new Float64Array(ua.buffer, ua.byteOffset, 1))[0];
+      return this.readView(8).getFloat64(0, true);
     }
 
     readBool(): boolean {
@@ -81,16 +112,23 @@ export namespace Internal {
     }
 
     readString(): string {
-      var len = this.readVarintAsNumber();
-      if (len == 0) {
-        return '';
-      }
-      // TODO revisit this
+      // TODO revisit typeingissues
       // @ts-ignore
-      return String.fromCharCode.apply(null, this.readRaw(len));
+      return String.fromCharCode.apply(null, this.readView(this.readVarintAsNumber()));
     }
 
-    readRaw(len: number): Uint8Array {
+    readBytes(): Uint8Array {
+      var dv = this.readView(this.readVarintAsNumber());
+      return new Uint8Array(dv.buffer.slice(dv.byteOffset, dv.byteOffset + dv.byteLength));
+    }
+
+    readDecoder(): Decoder {
+      var dv = this.readView(this.readVarintAsNumber());
+      var ua = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
+      return new Decoder(ua);
+    }
+
+    readView(len: number): DataView {
       if (this.isEOF()) {
         throw new ProtobufError('buffer overrun while reading raw');
       }
@@ -98,15 +136,15 @@ export namespace Internal {
       if (noff > this.buf.length) {
         throw new ProtobufError('buffer overrun while reading raw: ' + len);
       }
-      var ua = this.buf.subarray(this.offset, noff);
+      var dv = new DataView(this.buf.buffer, this.buf.byteOffset + this.offset, len);
       this.offset = noff;
-      return ua;
+      return dv;
     }
 
     skipWireType(wt: number): void {
       switch (wt) {
         case 0:
-          this.readVarint(); break; // We could technically optimize this to skip.
+          this.readVarintAsNumber(); break; // We could technically optimize this to skip.
         case 1:
           this.offset += 8; break;
         case 2:

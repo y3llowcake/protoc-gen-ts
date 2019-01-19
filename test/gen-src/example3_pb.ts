@@ -16,9 +16,12 @@ export class Donkey implements __pb__.Message {
       var [fn, wt] = d.readTag();
       switch(fn) {
         case 1:
+        console.log(`[PROTOC-DEBUG] reading field:1 (hi) wt:${wt}`);
         this.hi = d.readString();
+        console.log(`[PROTOC-DEBUG] read field:1 (hi)`);
         break;
         default:
+        console.log(`[PROTOC-DEBUG] skipping unknown field:${fn} wt:${wt}`);
         d.skipWireType(wt)
       }
     }
@@ -39,10 +42,19 @@ export class Funky implements __pb__.Message {
       var [fn, wt] = d.readTag();
       switch(fn) {
         case 1:
+        console.log(`[PROTOC-DEBUG] reading field:1 (monkey) wt:${wt}`);
+        if (this.monkey == null) this.monkey = new Funky.Monkey();
+        this.monkey.MergeFrom(d.readDecoder());
+        console.log(`[PROTOC-DEBUG] read field:1 (monkey)`);
         break;
         case 2:
+        console.log(`[PROTOC-DEBUG] reading field:2 (dokey) wt:${wt}`);
+        if (this.dokey == null) this.dokey = new Donkey();
+        this.dokey.MergeFrom(d.readDecoder());
+        console.log(`[PROTOC-DEBUG] read field:2 (dokey)`);
         break;
         default:
+        console.log(`[PROTOC-DEBUG] skipping unknown field:${fn} wt:${wt}`);
         d.skipWireType(wt)
       }
     }
@@ -62,9 +74,12 @@ export namespace Funky {
         var [fn, wt] = d.readTag();
         switch(fn) {
           case 1:
+          console.log(`[PROTOC-DEBUG] reading field:1 (hi) wt:${wt}`);
           this.hi = d.readString();
+          console.log(`[PROTOC-DEBUG] read field:1 (hi)`);
           break;
           default:
+          console.log(`[PROTOC-DEBUG] skipping unknown field:${fn} wt:${wt}`);
           d.skipWireType(wt)
         }
       }
