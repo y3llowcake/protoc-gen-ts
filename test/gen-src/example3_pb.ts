@@ -13,7 +13,7 @@ export class Donkey implements __pb__.Message {
 
   MergeFrom(d: __pb__.Internal.Decoder): void {
     while (!d.isEOF()) {
-      var [fn, wt] = d.readTag();
+      let [fn, wt] = d.readTag();
       switch(fn) {
         case 1:
         console.log(`[PROTOC-DEBUG] reading field:1 (hi) wt:${wt}`);
@@ -39,7 +39,7 @@ export class Funky implements __pb__.Message {
 
   MergeFrom(d: __pb__.Internal.Decoder): void {
     while (!d.isEOF()) {
-      var [fn, wt] = d.readTag();
+      let [fn, wt] = d.readTag();
       switch(fn) {
         case 1:
         console.log(`[PROTOC-DEBUG] reading field:1 (monkey) wt:${wt}`);
@@ -71,7 +71,7 @@ export namespace Funky {
 
     MergeFrom(d: __pb__.Internal.Decoder): void {
       while (!d.isEOF()) {
-        var [fn, wt] = d.readTag();
+        let [fn, wt] = d.readTag();
         switch(fn) {
           case 1:
           console.log(`[PROTOC-DEBUG] reading field:1 (hi) wt:${wt}`);

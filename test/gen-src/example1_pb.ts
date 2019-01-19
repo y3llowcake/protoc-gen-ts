@@ -19,7 +19,7 @@ export class example2 implements __pb__.Message {
 
   MergeFrom(d: __pb__.Internal.Decoder): void {
     while (!d.isEOF()) {
-      var [fn, wt] = d.readTag();
+      let [fn, wt] = d.readTag();
       switch(fn) {
         case 1:
         console.log(`[PROTOC-DEBUG] reading field:1 (aint32) wt:${wt}`);
@@ -97,7 +97,7 @@ export class example1 implements __pb__.Message {
 
   MergeFrom(d: __pb__.Internal.Decoder): void {
     while (!d.isEOF()) {
-      var [fn, wt] = d.readTag();
+      let [fn, wt] = d.readTag();
       switch(fn) {
         case 1:
         console.log(`[PROTOC-DEBUG] reading field:1 (adouble) wt:${wt}`);
@@ -197,7 +197,7 @@ export class example1 implements __pb__.Message {
         case 31:
         console.log(`[PROTOC-DEBUG] reading field:31 (manyint64) wt:${wt}`);
         if (wt == 2) {
-          var packed = d.readDecoder();
+          let packed = d.readDecoder();
           while (!packed.isEOF()) {
             this.manyint64.push(packed.readVarint())
           }
@@ -226,10 +226,20 @@ export class example1 implements __pb__.Message {
         break;
         case 51:
         console.log(`[PROTOC-DEBUG] reading field:51 (amap) wt:${wt}`);
+        {
+          let obj = new example1.AmapEntry();
+          obj.MergeFrom(d.readDecoder());
+          this.amap.set(obj.key, obj.value);
+        }
         console.log(`[PROTOC-DEBUG] read field:51 (amap)`);
         break;
         case 52:
         console.log(`[PROTOC-DEBUG] reading field:52 (amap2) wt:${wt}`);
+        {
+          let obj = new example1.Amap2Entry();
+          obj.MergeFrom(d.readDecoder());
+          this.amap2.set(obj.key, obj.value);
+        }
         console.log(`[PROTOC-DEBUG] read field:52 (amap2)`);
         break;
         case 49:
@@ -272,7 +282,7 @@ export namespace example1 {
 
     MergeFrom(d: __pb__.Internal.Decoder): void {
       while (!d.isEOF()) {
-        var [fn, wt] = d.readTag();
+        let [fn, wt] = d.readTag();
         switch(fn) {
           case 1:
           console.log(`[PROTOC-DEBUG] reading field:1 (astring) wt:${wt}`);
@@ -300,7 +310,7 @@ export namespace example1 {
 
     MergeFrom(d: __pb__.Internal.Decoder): void {
       while (!d.isEOF()) {
-        var [fn, wt] = d.readTag();
+        let [fn, wt] = d.readTag();
         switch(fn) {
           case 1:
           console.log(`[PROTOC-DEBUG] reading field:1 (key) wt:${wt}`);
@@ -333,7 +343,7 @@ export namespace example1 {
 
     MergeFrom(d: __pb__.Internal.Decoder): void {
       while (!d.isEOF()) {
-        var [fn, wt] = d.readTag();
+        let [fn, wt] = d.readTag();
         switch(fn) {
           case 1:
           console.log(`[PROTOC-DEBUG] reading field:1 (key) wt:${wt}`);

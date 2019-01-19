@@ -324,14 +324,21 @@ var isPackable = map[desc.FieldDescriptorProto_Type]bool{
 
 func (f field) writeDecoder(w *writer, dec, wt string) {
 	if f.isMap {
+		w.p("{")
+		w.p("let obj = new %s();", f.typeTsName)
+		w.p("obj.MergeFrom(%s.readDecoder());", dec)
+		w.p("this.%s.set(obj.key, obj.value);", f.varName())
+		w.p("}")
 		// TODO
 		return
 	}
 	if f.fd.GetType() == desc.FieldDescriptorProto_TYPE_MESSAGE || f.fd.GetType() == desc.FieldDescriptorProto_TYPE_GROUP {
 		if f.isRepeated() {
-			w.p("var obj = new %s();", f.typeTsName)
+			w.p("{")
+			w.p("let obj = new %s();", f.typeTsName)
 			w.p("obj.MergeFrom(%s.readDecoder());", dec)
 			w.p("this.%s.push(obj)", f.varName())
+			w.p("}")
 		} else {
 			// todo isoneof
 			w.p("if (this.%s == null) this.%s = new %s();", f.varName(), f.varName(), f.typeTsName)
@@ -385,7 +392,7 @@ func (f field) writeDecoder(w *writer, dec, wt string) {
 	packable := isPackable[f.fd.GetType()]
 	if packable {
 		w.p("if (%s == 2) {", wt)
-		w.p("var packed = %s.readDecoder();", dec)
+		w.p("let packed = %s.readDecoder();", dec)
 		w.p("while (!packed.isEOF()) {")
 		packedReader := strings.Replace(reader, dec, "packed", 1) // heh kinda hacky
 		w.p("this.%s.push(%s)", f.varName(), packedReader)
@@ -448,7 +455,7 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 	w.ln()
 	w.p("MergeFrom(d: %s.Internal.Decoder): void {", libMod.alias)
 	w.p("while (!d.isEOF()) {")
-	w.p("var [fn, wt] = d.readTag();")
+	w.p("let [fn, wt] = d.readTag();")
 	w.p("switch(fn) {")
 	for _, f := range fields {
 		w.p("case %d:", f.fd.GetNumber())

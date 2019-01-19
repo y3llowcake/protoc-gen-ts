@@ -9,7 +9,7 @@ asint64: 123456
 afixed32: 1234567
 afixed64: 12345678
 asfixed32: 123456789
-asfixed64: 1234567890
+asfixed64: -1234567890
 abool: true
 astring: "foobar"
 abytes: "hello world"

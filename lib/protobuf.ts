@@ -82,13 +82,18 @@ export namespace Internal {
     }
 
     readInt64(): bigint {
-      var dv = this.readView(8);
-      return BigInt(dv.getUint32(0, true)) + (BigInt(dv.getUint32(4, true)) << 32n);
+      var i = this.readUint64();
+      if (i < 0x8000000000000000n) {
+        return i;
+      }
+      // TODO this is wrong:
+      var mask = (2n << (63n)) - 1n;
+      return -(i & mask) + (i & ~mask);
     }
 
     readUint64(): bigint {
-      this.readView(8);
-      return 0n // TODO
+      var dv = this.readView(8);
+      return BigInt(dv.getUint32(0, true)) | (BigInt(dv.getUint32(4, true)) << 32n);
     }
 
     readUint32(): number {

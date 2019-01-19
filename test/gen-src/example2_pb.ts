@@ -18,7 +18,7 @@ export class example2 implements __pb__.Message {
 
   MergeFrom(d: __pb__.Internal.Decoder): void {
     while (!d.isEOF()) {
-      var [fn, wt] = d.readTag();
+      let [fn, wt] = d.readTag();
       switch(fn) {
         case 1:
         console.log(`[PROTOC-DEBUG] reading field:1 (zomg) wt:${wt}`);
@@ -42,7 +42,7 @@ export class refexample3 implements __pb__.Message {
 
   MergeFrom(d: __pb__.Internal.Decoder): void {
     while (!d.isEOF()) {
-      var [fn, wt] = d.readTag();
+      let [fn, wt] = d.readTag();
       switch(fn) {
         case 1:
         console.log(`[PROTOC-DEBUG] reading field:1 (funky) wt:${wt}`);
