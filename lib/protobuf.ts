@@ -31,7 +31,6 @@ export namespace Internal {
         let c = BigInt(this.buf[this.offset]);
         this.offset++;
         val += (c & 127n) << shift;
-        console.log("hrmph", val, c, shift);
         shift += 7n;
         if (c < 128n) {
           break;
