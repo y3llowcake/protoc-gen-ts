@@ -83,7 +83,7 @@ export namespace Internal {
 
     readInt64(): bigint {
       var dv = this.readView(8);
-      return (BigInt(dv.getUint32(0, true)) << 32n) + BigInt(dv.getUint32(4, true));
+      return BigInt(dv.getUint32(0, true)) + (BigInt(dv.getUint32(4, true)) << 32n);
     }
 
     readUint64(): bigint {
@@ -112,9 +112,11 @@ export namespace Internal {
     }
 
     readString(): string {
+      var dv = this.readView(this.readVarintAsNumber());
+      var ua = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
       // TODO revisit typeingissues
       // @ts-ignore
-      return String.fromCharCode.apply(null, this.readView(this.readVarintAsNumber()));
+      return String.fromCharCode.apply(null, ua);
     }
 
     readBytes(): Uint8Array {
