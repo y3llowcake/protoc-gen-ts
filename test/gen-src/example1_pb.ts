@@ -22,7 +22,7 @@ export class example2 implements __pb__.Message {
       let [fn, wt] = d.readTag();
       switch(fn) {
         case 1:
-        this.aint32 = d.readVarint32();
+        this.aint32 = d.readVarInt32();
         break;
         default:
         d.skipWireType(wt)
@@ -103,13 +103,13 @@ export class example1 implements __pb__.Message {
         this.afloat = d.readFloat();
         break;
         case 3:
-        this.aint32 = d.readVarint32();
+        this.aint32 = d.readVarInt32();
         break;
         case 4:
         this.aint64 = d.readVarint();
         break;
         case 5:
-        this.auint32 = d.readVarint32();
+        this.auint32 = d.readVarUint32();
         break;
         case 6:
         this.auint64 = d.readVarint();
@@ -196,7 +196,7 @@ export class example1 implements __pb__.Message {
         this.oostring = d.readString();
         break;
         case 61:
-        this.ooint = d.readVarint32();
+        this.ooint = d.readVarInt32();
         break;
         default:
         d.skipWireType(wt)

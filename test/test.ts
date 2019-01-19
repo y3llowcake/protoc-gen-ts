@@ -24,7 +24,7 @@ function example1(): e1pb.example1 {
   e.afixed32 = 1234567;
   e.afixed64 = 12345678n;
   e.asfixed32 = 123456789;
-  e.asfixed64 = 1234567890n;
+  e.asfixed64 = -1234567890n;
   e.abool = true;
   e.astring = "foobar";
   e.abytes = new TextEncoder().encode("hello world");
@@ -69,7 +69,7 @@ pb.Unmarshal(ua, got);
 
 let diffs = diff(got, example1());
 if (diffs == null || diffs.length > 0) {
-  console.log("found diffs");
+  console.log("found diffs, got (lhs) vs exp (rhs)");
   console.table(diffs);
   throw new Error("found diffs");
 }

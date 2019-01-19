@@ -21,7 +21,7 @@ export class example2 implements __pb__.Message {
       let [fn, wt] = d.readTag();
       switch(fn) {
         case 1:
-        this.zomg = d.readVarint32();
+        this.zomg = d.readVarInt32();
         break;
         default:
         d.skipWireType(wt)

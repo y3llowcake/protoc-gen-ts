@@ -356,11 +356,10 @@ func (f field) writeDecoder(w *writer, dec, wt string) {
 	case desc.FieldDescriptorProto_TYPE_INT64,
 		desc.FieldDescriptorProto_TYPE_UINT64:
 		reader = fmt.Sprintf("%s.readVarint()", dec)
-	//case desc.FieldDescriptorProto_TYPE_INT32:
-	//	reader = fmt.Sprintf("%s.readVarint32Signed()", dec)
-	case desc.FieldDescriptorProto_TYPE_UINT32,
-		desc.FieldDescriptorProto_TYPE_INT32:
-		reader = fmt.Sprintf("%s.readVarint32()", dec)
+	case desc.FieldDescriptorProto_TYPE_INT32:
+		reader = fmt.Sprintf("%s.readVarInt32()", dec)
+	case desc.FieldDescriptorProto_TYPE_UINT32:
+		reader = fmt.Sprintf("%s.readVarUint32()", dec)
 	case desc.FieldDescriptorProto_TYPE_SINT64:
 		reader = fmt.Sprintf("%s.readZigZag64()", dec)
 	case desc.FieldDescriptorProto_TYPE_SINT32:

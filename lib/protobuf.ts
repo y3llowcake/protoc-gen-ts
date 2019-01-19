@@ -22,13 +22,13 @@ export namespace Internal {
     }
 
     readVarint(): bigint {
-      var val = 0n;
-      var shift = 0n;
+      let val = 0n;
+      let shift = 0n;
       while (true) {
         if (this.isEOF()) {
           throw new ProtobufError("buffer overrun while reading varint-128");
         }
-        var c = BigInt(this.buf[this.offset]);
+        let c = BigInt(this.buf[this.offset]);
         this.offset++;
         val += (c & 127n) << shift;
         shift += 7n;
@@ -40,13 +40,13 @@ export namespace Internal {
     }
 
     readVarintAsNumber(): number {
-      var val = 0;
-      var shift = 0;
+      let val = 0;
+      let shift = 0;
       while (true) {
         if (this.isEOF()) {
           throw new ProtobufError("buffer overrun while reading varint-128");
         }
-        var c = this.buf[this.offset];
+        let c = this.buf[this.offset];
         this.offset++;
         val += (c & 127) << shift;
         shift += 7;
@@ -58,26 +58,34 @@ export namespace Internal {
     }
 
     readTag(): [number, number] {
-      var k = this.readVarintAsNumber();
-      var fn = k >> 3;
+      let k = this.readVarintAsNumber();
+      let fn = k >> 3;
       if (fn == 0) {
         throw new ProtobufError("zero field number");
       }
       return [fn, k & 0x07];
     }
 
-    readVarint32(): number {
+    readVarUint32(): number {
       return this.readVarintAsNumber() & 0xffffffff;
     }
 
+    readVarInt32(): number {
+      let i = this.readVarUint32();
+      if (i > 0x7fffffff) {
+        return i | (0xffffffff << 32);
+      }
+      return i;
+    }
+
     readZigZag32(): number {
-      var i = this.readVarintAsNumber();
+      let i = this.readVarintAsNumber();
       i |= i & 0xffffffff;
       return ((i >> 1) & 0x7fffffff) ^ -(i & 1);
     }
 
     readZigZag64(): bigint {
-      var i = this.readVarint();
+      let i = this.readVarint();
       return ((i >> 1n) & 0x7fffffffffffffffn) ^ -(i & 1n);
     }
 
@@ -86,7 +94,7 @@ export namespace Internal {
     }
 
     readUint64(): bigint {
-      var dv = this.readView(8);
+      let dv = this.readView(8);
       return (
         BigInt(dv.getUint32(0, true)) | (BigInt(dv.getUint32(4, true)) << 32n)
       );
@@ -113,9 +121,9 @@ export namespace Internal {
     }
 
     readString(): string {
-      var dv = this.readView(this.readVarintAsNumber());
+      let dv = this.readView(this.readVarintAsNumber());
       // utf16?
-      //var ua = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
+      //let ua = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
       // TODO revisit typeingissues
       // - @ts-ignore
       //return String.fromCharCode.apply(null, ua);
@@ -123,15 +131,15 @@ export namespace Internal {
     }
 
     readBytes(): Uint8Array {
-      var dv = this.readView(this.readVarintAsNumber());
+      let dv = this.readView(this.readVarintAsNumber());
       return new Uint8Array(
         dv.buffer.slice(dv.byteOffset, dv.byteOffset + dv.byteLength)
       );
     }
 
     readDecoder(): Decoder {
-      var dv = this.readView(this.readVarintAsNumber());
-      var ua = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
+      let dv = this.readView(this.readVarintAsNumber());
+      let ua = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
       return new Decoder(ua);
     }
 
@@ -139,11 +147,11 @@ export namespace Internal {
       if (this.isEOF()) {
         throw new ProtobufError("buffer overrun while reading raw");
       }
-      var noff = this.offset + len;
+      let noff = this.offset + len;
       if (noff > this.buf.length) {
         throw new ProtobufError("buffer overrun while reading raw: " + len);
       }
-      var dv = new DataView(
+      let dv = new DataView(
         this.buf.buffer,
         this.buf.byteOffset + this.offset,
         len
