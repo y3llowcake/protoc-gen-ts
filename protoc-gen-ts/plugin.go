@@ -197,8 +197,7 @@ func newField(fd *desc.FieldDescriptorProto, ns *Namespace, mr *moduleResolver) 
 }
 
 func (f field) isOneofMember() bool {
-	return false
-	// return f.fd.OneofIndex != nil
+	return f.fd.OneofIndex != nil
 }
 
 func (f field) varName() string {
@@ -436,17 +435,17 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 
 	w.p("export class %s implements %s.Message {", dp.GetName(), libMod.alias)
 	for _, f := range fields {
-		if f.isOneofMember() {
-			continue
-		}
+		//if f.isOneofMember() {
+		//	continue
+		//}
 		w.p("%s: %s;", f.varName(), f.labeledType())
 	}
 	w.ln()
 	w.p("constructor() {")
 	for _, f := range fields {
-		if f.isOneofMember() {
-			continue
-		}
+		//if f.isOneofMember() {
+		//	continue
+		//}
 		w.p("this.%s = %s;", f.varName(), f.defaultValue())
 	}
 	w.p("}") // constructor

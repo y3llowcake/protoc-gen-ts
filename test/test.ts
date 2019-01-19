@@ -59,6 +59,7 @@ function example1(): e1pb.example1 {
   e.outoforder = 1n;
 
   // e.aoneof = new \foo\bar\example1pb_oostring("oneofstring");
+  e.oostring = "oneofstring";
   return e;
 }
 
@@ -68,10 +69,8 @@ let got = new e1pb.example1();
 pb.Unmarshal(ua, got);
 
 let diffs = diff(got, example1());
-if (diffs == null || diffs.length > 0) {
+if (diffs != null && diffs.length > 0) {
   console.log("found diffs, got (lhs) vs exp (rhs)");
   console.table(diffs);
   throw new Error("found diffs");
 }
-
-console.log(got);
