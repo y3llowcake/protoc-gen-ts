@@ -22,12 +22,9 @@ export class example2 implements __pb__.Message {
       let [fn, wt] = d.readTag();
       switch(fn) {
         case 1:
-        console.log(`[PROTOC-DEBUG] reading field:1 (aint32) wt:${wt}`);
         this.aint32 = d.readVarint32();
-        console.log(`[PROTOC-DEBUG] read field:1 (aint32)`);
         break;
         default:
-        console.log(`[PROTOC-DEBUG] skipping unknown field:${fn} wt:${wt}`);
         d.skipWireType(wt)
       }
     }
@@ -40,7 +37,7 @@ export class example1 implements __pb__.Message {
   aint32: number;
   aint64: bigint;
   auint32: number;
-  auint64: number;
+  auint64: bigint;
   asint32: number;
   asint64: bigint;
   afixed32: number;
@@ -70,7 +67,7 @@ export class example1 implements __pb__.Message {
     this.aint32 = 0;
     this.aint64 = 0n;
     this.auint32 = 0;
-    this.auint64 = 0;
+    this.auint64 = 0n;
     this.asint32 = 0;
     this.asint64 = 0n;
     this.afixed32 = 0;
@@ -100,102 +97,63 @@ export class example1 implements __pb__.Message {
       let [fn, wt] = d.readTag();
       switch(fn) {
         case 1:
-        console.log(`[PROTOC-DEBUG] reading field:1 (adouble) wt:${wt}`);
         this.adouble = d.readDouble();
-        console.log(`[PROTOC-DEBUG] read field:1 (adouble)`);
         break;
         case 2:
-        console.log(`[PROTOC-DEBUG] reading field:2 (afloat) wt:${wt}`);
         this.afloat = d.readFloat();
-        console.log(`[PROTOC-DEBUG] read field:2 (afloat)`);
         break;
         case 3:
-        console.log(`[PROTOC-DEBUG] reading field:3 (aint32) wt:${wt}`);
         this.aint32 = d.readVarint32();
-        console.log(`[PROTOC-DEBUG] read field:3 (aint32)`);
         break;
         case 4:
-        console.log(`[PROTOC-DEBUG] reading field:4 (aint64) wt:${wt}`);
         this.aint64 = d.readVarint();
-        console.log(`[PROTOC-DEBUG] read field:4 (aint64)`);
         break;
         case 5:
-        console.log(`[PROTOC-DEBUG] reading field:5 (auint32) wt:${wt}`);
         this.auint32 = d.readVarint32();
-        console.log(`[PROTOC-DEBUG] read field:5 (auint32)`);
         break;
         case 6:
-        console.log(`[PROTOC-DEBUG] reading field:6 (auint64) wt:${wt}`);
-        this.auint64 = d.readVarint32();
-        console.log(`[PROTOC-DEBUG] read field:6 (auint64)`);
+        this.auint64 = d.readVarint();
         break;
         case 7:
-        console.log(`[PROTOC-DEBUG] reading field:7 (asint32) wt:${wt}`);
         this.asint32 = d.readZigZag32();
-        console.log(`[PROTOC-DEBUG] read field:7 (asint32)`);
         break;
         case 8:
-        console.log(`[PROTOC-DEBUG] reading field:8 (asint64) wt:${wt}`);
         this.asint64 = d.readZigZag64();
-        console.log(`[PROTOC-DEBUG] read field:8 (asint64)`);
         break;
         case 9:
-        console.log(`[PROTOC-DEBUG] reading field:9 (afixed32) wt:${wt}`);
         this.afixed32 = d.readUint32();
-        console.log(`[PROTOC-DEBUG] read field:9 (afixed32)`);
         break;
         case 10:
-        console.log(`[PROTOC-DEBUG] reading field:10 (afixed64) wt:${wt}`);
         this.afixed64 = d.readUint64();
-        console.log(`[PROTOC-DEBUG] read field:10 (afixed64)`);
         break;
         case 11:
-        console.log(`[PROTOC-DEBUG] reading field:11 (asfixed32) wt:${wt}`);
         this.asfixed32 = d.readInt32();
-        console.log(`[PROTOC-DEBUG] read field:11 (asfixed32)`);
         break;
         case 12:
-        console.log(`[PROTOC-DEBUG] reading field:12 (asfixed64) wt:${wt}`);
         this.asfixed64 = d.readInt64();
-        console.log(`[PROTOC-DEBUG] read field:12 (asfixed64)`);
         break;
         case 13:
-        console.log(`[PROTOC-DEBUG] reading field:13 (abool) wt:${wt}`);
         this.abool = d.readBool();
-        console.log(`[PROTOC-DEBUG] read field:13 (abool)`);
         break;
         case 14:
-        console.log(`[PROTOC-DEBUG] reading field:14 (astring) wt:${wt}`);
         this.astring = d.readString();
-        console.log(`[PROTOC-DEBUG] read field:14 (astring)`);
         break;
         case 15:
-        console.log(`[PROTOC-DEBUG] reading field:15 (abytes) wt:${wt}`);
         this.abytes = d.readBytes();
-        console.log(`[PROTOC-DEBUG] read field:15 (abytes)`);
         break;
         case 20:
-        console.log(`[PROTOC-DEBUG] reading field:20 (aenum1) wt:${wt}`);
         this.aenum1 = d.readVarintAsNumber();
-        console.log(`[PROTOC-DEBUG] read field:20 (aenum1)`);
         break;
         case 21:
-        console.log(`[PROTOC-DEBUG] reading field:21 (aenum2) wt:${wt}`);
         this.aenum2 = d.readVarintAsNumber();
-        console.log(`[PROTOC-DEBUG] read field:21 (aenum2)`);
         break;
         case 22:
-        console.log(`[PROTOC-DEBUG] reading field:22 (aenum22) wt:${wt}`);
         this.aenum22 = d.readVarintAsNumber();
-        console.log(`[PROTOC-DEBUG] read field:22 (aenum22)`);
         break;
         case 30:
-        console.log(`[PROTOC-DEBUG] reading field:30 (manystring) wt:${wt}`);
         this.manystring.push(d.readString())
-        console.log(`[PROTOC-DEBUG] read field:30 (manystring)`);
         break;
         case 31:
-        console.log(`[PROTOC-DEBUG] reading field:31 (manyint64) wt:${wt}`);
         if (wt == 2) {
           let packed = d.readDecoder();
           while (!packed.isEOF()) {
@@ -204,61 +162,43 @@ export class example1 implements __pb__.Message {
         } else {
           this.manyint64.push(d.readVarint())
         }
-        console.log(`[PROTOC-DEBUG] read field:31 (manyint64)`);
         break;
         case 40:
-        console.log(`[PROTOC-DEBUG] reading field:40 (aexample2) wt:${wt}`);
         if (this.aexample2 == null) this.aexample2 = new example1.example2();
         this.aexample2.MergeFrom(d.readDecoder());
-        console.log(`[PROTOC-DEBUG] read field:40 (aexample2)`);
         break;
         case 41:
-        console.log(`[PROTOC-DEBUG] reading field:41 (aexample22) wt:${wt}`);
         if (this.aexample22 == null) this.aexample22 = new example2();
         this.aexample22.MergeFrom(d.readDecoder());
-        console.log(`[PROTOC-DEBUG] read field:41 (aexample22)`);
         break;
         case 42:
-        console.log(`[PROTOC-DEBUG] reading field:42 (aexample23) wt:${wt}`);
         if (this.aexample23 == null) this.aexample23 = new ___example2_pb.example2();
         this.aexample23.MergeFrom(d.readDecoder());
-        console.log(`[PROTOC-DEBUG] read field:42 (aexample23)`);
         break;
         case 51:
-        console.log(`[PROTOC-DEBUG] reading field:51 (amap) wt:${wt}`);
         {
           let obj = new example1.AmapEntry();
           obj.MergeFrom(d.readDecoder());
           this.amap.set(obj.key, obj.value);
         }
-        console.log(`[PROTOC-DEBUG] read field:51 (amap)`);
         break;
         case 52:
-        console.log(`[PROTOC-DEBUG] reading field:52 (amap2) wt:${wt}`);
         {
           let obj = new example1.Amap2Entry();
           obj.MergeFrom(d.readDecoder());
           this.amap2.set(obj.key, obj.value);
         }
-        console.log(`[PROTOC-DEBUG] read field:52 (amap2)`);
         break;
         case 49:
-        console.log(`[PROTOC-DEBUG] reading field:49 (outoforder) wt:${wt}`);
         this.outoforder = d.readVarint();
-        console.log(`[PROTOC-DEBUG] read field:49 (outoforder)`);
         break;
         case 60:
-        console.log(`[PROTOC-DEBUG] reading field:60 (oostring) wt:${wt}`);
         this.oostring = d.readString();
-        console.log(`[PROTOC-DEBUG] read field:60 (oostring)`);
         break;
         case 61:
-        console.log(`[PROTOC-DEBUG] reading field:61 (ooint) wt:${wt}`);
         this.ooint = d.readVarint32();
-        console.log(`[PROTOC-DEBUG] read field:61 (ooint)`);
         break;
         default:
-        console.log(`[PROTOC-DEBUG] skipping unknown field:${fn} wt:${wt}`);
         d.skipWireType(wt)
       }
     }
@@ -285,12 +225,9 @@ export namespace example1 {
         let [fn, wt] = d.readTag();
         switch(fn) {
           case 1:
-          console.log(`[PROTOC-DEBUG] reading field:1 (astring) wt:${wt}`);
           this.astring = d.readString();
-          console.log(`[PROTOC-DEBUG] read field:1 (astring)`);
           break;
           default:
-          console.log(`[PROTOC-DEBUG] skipping unknown field:${fn} wt:${wt}`);
           d.skipWireType(wt)
         }
       }
@@ -313,17 +250,12 @@ export namespace example1 {
         let [fn, wt] = d.readTag();
         switch(fn) {
           case 1:
-          console.log(`[PROTOC-DEBUG] reading field:1 (key) wt:${wt}`);
           this.key = d.readString();
-          console.log(`[PROTOC-DEBUG] read field:1 (key)`);
           break;
           case 2:
-          console.log(`[PROTOC-DEBUG] reading field:2 (value) wt:${wt}`);
           this.value = d.readString();
-          console.log(`[PROTOC-DEBUG] read field:2 (value)`);
           break;
           default:
-          console.log(`[PROTOC-DEBUG] skipping unknown field:${fn} wt:${wt}`);
           d.skipWireType(wt)
         }
       }
@@ -346,18 +278,13 @@ export namespace example1 {
         let [fn, wt] = d.readTag();
         switch(fn) {
           case 1:
-          console.log(`[PROTOC-DEBUG] reading field:1 (key) wt:${wt}`);
           this.key = d.readString();
-          console.log(`[PROTOC-DEBUG] read field:1 (key)`);
           break;
           case 2:
-          console.log(`[PROTOC-DEBUG] reading field:2 (value) wt:${wt}`);
           if (this.value == null) this.value = new ___example2_pb.example2();
           this.value.MergeFrom(d.readDecoder());
-          console.log(`[PROTOC-DEBUG] read field:2 (value)`);
           break;
           default:
-          console.log(`[PROTOC-DEBUG] skipping unknown field:${fn} wt:${wt}`);
           d.skipWireType(wt)
         }
       }

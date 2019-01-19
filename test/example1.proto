@@ -22,7 +22,7 @@ message example1 {
 	int32 aint32 = 3;
 	int64 aint64 = 4;
 	uint32 auint32 = 5;
-	uint32 auint64 = 6;
+	uint64 auint64 = 6;
 	sint32 asint32 = 7;
 	sint64 asint64 = 8;
 	fixed32 afixed32 = 9;
