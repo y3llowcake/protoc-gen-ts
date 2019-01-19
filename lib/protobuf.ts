@@ -31,6 +31,7 @@ export namespace Internal {
         let c = BigInt(this.buf[this.offset]);
         this.offset++;
         val += (c & 127n) << shift;
+        console.log("hrmph", val, c, shift);
         shift += 7n;
         if (c < 128n) {
           break;
@@ -40,21 +41,7 @@ export namespace Internal {
     }
 
     readVarintAsNumber(): number {
-      let val = 0;
-      let shift = 0;
-      while (true) {
-        if (this.isEOF()) {
-          throw new ProtobufError("buffer overrun while reading varint-128");
-        }
-        let c = this.buf[this.offset];
-        this.offset++;
-        val += (c & 127) << shift;
-        shift += 7;
-        if (c < 128) {
-          break;
-        }
-      }
-      return val;
+      return Number(this.readVarint());
     }
 
     readTag(): [number, number] {
@@ -67,15 +54,11 @@ export namespace Internal {
     }
 
     readVarUint32(): number {
-      return this.readVarintAsNumber() & 0xffffffff;
+      return Number(this.readVarint() & 0xffffffffn);
     }
 
     readVarInt32(): number {
-      let i = this.readVarUint32();
-      if (i > 0x7fffffff) {
-        return i | (0xffffffff << 32);
-      }
-      return i;
+      return Number(BigInt.asIntN(32, this.readVarint() & 0xffffffffn));
     }
 
     readZigZag32(): number {

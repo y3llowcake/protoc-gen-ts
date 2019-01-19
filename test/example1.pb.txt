@@ -1,6 +1,6 @@
 adouble: 13.37
 afloat: 100.1
-aint32: -1
+aint32: 1
 aint64: 12
 auint32: 123
 auint64: 1234

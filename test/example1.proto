@@ -17,21 +17,21 @@ message example2 {
 
 message example1 {
   // Scalars.
-	double adouble = 1;
-	float afloat = 2;
-	int32 aint32 = 3;
-	int64 aint64 = 4;
-	uint32 auint32 = 5;
-	uint64 auint64 = 6;
-	sint32 asint32 = 7;
-	sint64 asint64 = 8;
-	fixed32 afixed32 = 9;
-	fixed64 afixed64 = 10;
-	sfixed32 asfixed32 = 11;
-	sfixed64 asfixed64 = 12;
-	bool abool = 13;
-	string astring = 14;
-	bytes abytes = 15;
+  double adouble = 1;
+  float afloat = 2;
+  int32 aint32 = 3;
+  int64 aint64 = 4;
+  uint32 auint32 = 5;
+  uint64 auint64 = 6;
+  sint32 asint32 = 7;
+  sint64 asint64 = 8;
+  fixed32 afixed32 = 9;
+  fixed64 afixed64 = 10;
+  sfixed32 asfixed32 = 11;
+  sfixed64 asfixed64 = 12;
+  bool abool = 13;
+  string astring = 14;
+  bytes abytes = 15;
 
   // Enums
   enum AEnum2 {
