@@ -23,6 +23,13 @@ export class Donkey implements __pb__.Message {
       }
     }
   }
+
+  WriteTo(e: __pb__.Internal.Encoder): void {
+    if (this.hi != "") {
+      e.writeTag(1, 2);
+      e.writeString(this.hi);
+    }
+  }
 }
 
 export class Funky implements __pb__.Message {
@@ -51,6 +58,9 @@ export class Funky implements __pb__.Message {
       }
     }
   }
+
+  WriteTo(e: __pb__.Internal.Encoder): void {
+  }
 }
 
 export namespace Funky {
@@ -71,6 +81,13 @@ export namespace Funky {
           default:
           d.skipWireType(wt)
         }
+      }
+    }
+
+    WriteTo(e: __pb__.Internal.Encoder): void {
+      if (this.hi != "") {
+        e.writeTag(1, 2);
+        e.writeString(this.hi);
       }
     }
   }

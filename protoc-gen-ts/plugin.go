@@ -283,7 +283,14 @@ func (f field) defaultValue() string {
 	default:
 		panic(fmt.Errorf("unexpected proto type while converting to php type: %v", t))
 	}
+}
 
+func (f field) isPacked() bool {
+	//if f.syn == SyntaxProto3 {
+	// TODO: technically you can disable packing?
+	return isPackable[f.fd.GetType()]
+	//}
+	//return f.fd.GetOptions().GetPacked()
 }
 
 func (f field) labeledType() string {
@@ -302,6 +309,20 @@ func (f field) labeledType() string {
 
 func (f field) isRepeated() bool {
 	return *f.fd.Label == desc.FieldDescriptorProto_LABEL_REPEATED
+}
+
+// Default is 0
+var writeWireType = map[desc.FieldDescriptorProto_Type]int{
+	desc.FieldDescriptorProto_TYPE_FLOAT:    5,
+	desc.FieldDescriptorProto_TYPE_DOUBLE:   1,
+	desc.FieldDescriptorProto_TYPE_FIXED32:  5,
+	desc.FieldDescriptorProto_TYPE_SFIXED32: 5,
+	desc.FieldDescriptorProto_TYPE_FIXED64:  1,
+	desc.FieldDescriptorProto_TYPE_SFIXED64: 1,
+	desc.FieldDescriptorProto_TYPE_STRING:   2,
+	desc.FieldDescriptorProto_TYPE_BYTES:    2,
+	desc.FieldDescriptorProto_TYPE_MESSAGE:  2,
+	desc.FieldDescriptorProto_TYPE_GROUP:    2,
 }
 
 var isPackable = map[desc.FieldDescriptorProto_Type]bool{
@@ -347,7 +368,6 @@ func (f field) writeDecoder(w *writer, dec, wt string) {
 	}
 	reader := ""
 	switch f.fd.GetType() {
-
 	case desc.FieldDescriptorProto_TYPE_STRING:
 		reader = fmt.Sprintf("%s.readString()", dec)
 	case desc.FieldDescriptorProto_TYPE_BYTES:
@@ -404,6 +424,79 @@ func (f field) writeDecoder(w *writer, dec, wt string) {
 	// Repeated.
 }
 
+func (f field) primitiveWriter(enc string) (string, string) {
+	writer := ""
+	switch f.fd.GetType() {
+	case desc.FieldDescriptorProto_TYPE_STRING:
+		writer = fmt.Sprintf("%s.writeString(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_BYTES:
+		writer = fmt.Sprintf("%s.writeBytes(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_INT64,
+		desc.FieldDescriptorProto_TYPE_UINT64:
+		writer = fmt.Sprintf("%s.writeVarint(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_INT32:
+		writer = fmt.Sprintf("%s.writeVarInt32(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_UINT32:
+		writer = fmt.Sprintf("%s.writeVarUint32(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_SINT64:
+		writer = fmt.Sprintf("%s.writeZigZag64(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_SINT32:
+		writer = fmt.Sprintf("%s.writeZigZag32(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_FLOAT:
+		writer = fmt.Sprintf("%s.writeFloat(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_DOUBLE:
+		writer = fmt.Sprintf("%s.writeDouble(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_FIXED32:
+		writer = fmt.Sprintf("%s.writeUint32(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_SFIXED32:
+		writer = fmt.Sprintf("%s.writeInt32(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_FIXED64:
+		writer = fmt.Sprintf("%s.writeUint64(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_SFIXED64:
+		writer = fmt.Sprintf("%s.writeInt64(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_BOOL:
+		writer = fmt.Sprintf("%s.writeBool(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_ENUM:
+		writer = fmt.Sprintf("%s.writeNumberAsVarint(this.%s)", enc, f.varName())
+	default:
+		panic(fmt.Errorf("unknown primitive writer for fd type: %+v", f.fd.GetType()))
+	}
+	tagWriter := fmt.Sprintf("%s.writeTag(%d, %d)", enc, f.fd.GetNumber(), writeWireType[f.fd.GetType()])
+	return tagWriter, writer
+}
+
+func (f field) writeEncoder(w *writer, enc string, alwaysEmitDefaultValue bool) {
+	if f.isMap {
+		// TODO
+		return
+	}
+	if f.fd.GetType() == desc.FieldDescriptorProto_TYPE_MESSAGE || f.fd.GetType() == desc.FieldDescriptorProto_TYPE_GROUP {
+		if f.isRepeated() {
+		} else {
+		}
+		return
+	}
+
+	tagWriter, writer := f.primitiveWriter(enc)
+
+	if !f.isRepeated() {
+		if !alwaysEmitDefaultValue {
+			w.p("if (this.%s != %s) {", f.varName(), f.defaultValue())
+		}
+		w.p(tagWriter + ";")
+		w.p(writer + ";")
+		if !alwaysEmitDefaultValue {
+			w.p("}")
+		}
+		return
+	}
+
+	// repeated
+	if f.isPacked() {
+	} else {
+	}
+}
+
 func writeEnum(w *writer, edp *desc.EnumDescriptorProto, prefixNames []string) {
 	// name := strings.Join(append(prefixNames, edp.GetName()), "_")
 	if len(prefixNames) > 0 {
@@ -449,8 +542,9 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 		w.p("this.%s = %s;", f.varName(), f.defaultValue())
 	}
 	w.p("}") // constructor
-
 	w.ln()
+
+	// MergeFrom
 	w.p("MergeFrom(d: %s.Internal.Decoder): void {", libMod.alias)
 	w.p("while (!d.isEOF()) {")
 	w.p("let [fn, wt] = d.readTag();")
@@ -468,6 +562,20 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 	w.p("}") // switch
 	w.p("}") // while
 	w.p("}") // MergeFrom
+	w.ln()
+
+	// WriteTo
+	w.p("WriteTo(e: %s.Internal.Encoder): void {", libMod.alias)
+	for _, f := range fields {
+		// if f.isOneofMember() {
+		// continue
+		// }
+		w.pdebug("maybe writing field %d, (%s)", f.fd.GetNumber(), f.fd.GetName())
+		f.writeEncoder(w, "e", false)
+		w.pdebug("maybe wrote field %d, (%s)", f.fd.GetNumber(), f.fd.GetName())
+	}
+	w.p("}")
+
 	w.p("}") // class
 
 	if len(prefixNames) > 0 {

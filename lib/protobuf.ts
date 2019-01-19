@@ -6,11 +6,19 @@ class ProtobufError extends Error {
 
 export interface Message {
   MergeFrom(d: Internal.Decoder): void;
+  WriteTo(e: Internal.Encoder): void;
 }
 
 export function Unmarshal(raw: Uint8Array, m: Message): void {
   m.MergeFrom(new Internal.Decoder(raw));
 }
+
+export function Marshal(m: Message): Uint8Array {
+  let e = new Internal.Encoder(new Uint8Array(0));
+  m.WriteTo(e);
+  return e.buf;
+}
+
 
 export namespace Internal {
   export class Decoder {
@@ -104,19 +112,13 @@ export namespace Internal {
 
     readString(): string {
       let dv = this.readView(this.readVarintAsNumber());
-      // utf16?
-      //let ua = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
-      // TODO revisit typeingissues
-      // - @ts-ignore
-      //return String.fromCharCode.apply(null, ua);
       return new TextDecoder("utf-8").decode(dv);
     }
 
     readBytes(): Uint8Array {
       let dv = this.readView(this.readVarintAsNumber());
-      return new Uint8Array(
-        dv.buffer.slice(dv.byteOffset, dv.byteOffset + dv.byteLength)
-      );
+      let buf = dv.buffer.slice(dv.byteOffset, dv.byteOffset + dv.byteLength);
+      return new Uint8Array(buf);
     }
 
     readDecoder(): Decoder {
@@ -169,6 +171,63 @@ export namespace Internal {
 
     isEOF(): boolean {
       return this.offset >= this.buf.length;
+    }
+  }
+
+  export class Encoder {
+    buf: Uint8Array;
+    
+    constructor(buf: Uint8Array) {
+      this.buf = buf;
+    }
+
+    writeVarint(n: bigint): void {
+    }
+
+    writeNumberAsVarint(n: number): void {
+    }
+
+    writeTag(fn: number, wt: number): void {
+      this.writeNumberAsVarint((fn << 3) | wt);
+    }
+
+    writeBytes(v: Uint8Array): void {
+    }
+
+    writeString(v: string): void {
+    }
+
+    writeBool(v: boolean): void {
+    }
+
+    writeDouble(v: number): void {
+    }
+
+    writeFloat(v: number): void {
+    }
+
+    writeUint32(v: number): void {
+    }
+
+    writeInt32(v: number): void {
+    }
+
+    writeVarInt32(v: number): void {
+    }
+
+    writeVarUint32(v: number): void {
+    }
+
+    writeZigZag32(v: number): void {
+    }
+
+    writeZigZag64(v: bigint): void {
+    }
+
+    writeInt64(v: bigint): void {
+    }
+
+    writeUint64(v: bigint): void {
     }
   }
 }
