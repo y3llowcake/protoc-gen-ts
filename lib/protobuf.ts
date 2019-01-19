@@ -82,13 +82,7 @@ export namespace Internal {
     }
 
     readInt64(): bigint {
-      var i = this.readUint64();
-      if (i < 0x8000000000000000n) {
-        return i;
-      }
-      // TODO this is wrong:
-      var mask = (2n << (63n)) - 1n;
-      return -(i & mask) + (i & ~mask);
+      return BigInt.asIntN(64, this.readUint64());
     }
 
     readUint64(): bigint {
@@ -118,10 +112,12 @@ export namespace Internal {
 
     readString(): string {
       var dv = this.readView(this.readVarintAsNumber());
-      var ua = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
+      // utf16?
+      //var ua = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
       // TODO revisit typeingissues
-      // @ts-ignore
-      return String.fromCharCode.apply(null, ua);
+      // - @ts-ignore
+      //return String.fromCharCode.apply(null, ua);
+      return new TextDecoder('utf-8').decode(dv);
     }
 
     readBytes(): Uint8Array {

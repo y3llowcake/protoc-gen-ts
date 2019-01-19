@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-const genDebug = true
+const genDebug = false
 
 func main() {
 	var buf bytes.Buffer
