@@ -293,6 +293,46 @@ export class example1 implements __pb__.Message {
       packed.writeVarint(elem);
     }
     e.writeEncoder(packed, 31);
+    {
+      const msg = this.aexample2;
+      if (msg != null) {
+        let nested = new __pb__.Internal.Encoder();
+        msg.WriteTo(nested);
+        e.writeEncoder(nested, 40)
+      }
+    }
+    {
+      const msg = this.aexample22;
+      if (msg != null) {
+        let nested = new __pb__.Internal.Encoder();
+        msg.WriteTo(nested);
+        e.writeEncoder(nested, 41)
+      }
+    }
+    {
+      const msg = this.aexample23;
+      if (msg != null) {
+        let nested = new __pb__.Internal.Encoder();
+        msg.WriteTo(nested);
+        e.writeEncoder(nested, 42)
+      }
+    }
+    for (const [k, v] of this.amap) {
+      let obj = new example1.AmapEntry();
+      obj.key = k;
+      obj.value = v;
+      let nested = new __pb__.Internal.Encoder();
+      obj.WriteTo(nested);
+      e.writeEncoder(nested, 51);
+    }
+    for (const [k, v] of this.amap2) {
+      let obj = new example1.Amap2Entry();
+      obj.key = k;
+      obj.value = v;
+      let nested = new __pb__.Internal.Encoder();
+      obj.WriteTo(nested);
+      e.writeEncoder(nested, 52);
+    }
     if (this.outoforder != 0n) {
       e.writeTag(49, 0);
       e.writeVarint(this.outoforder);
@@ -415,6 +455,14 @@ export namespace example1 {
       if (this.key != "") {
         e.writeTag(1, 2);
         e.writeString(this.key);
+      }
+      {
+        const msg = this.value;
+        if (msg != null) {
+          let nested = new __pb__.Internal.Encoder();
+          msg.WriteTo(nested);
+          e.writeEncoder(nested, 2)
+        }
       }
     }
   }

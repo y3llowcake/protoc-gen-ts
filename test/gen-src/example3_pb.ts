@@ -60,6 +60,22 @@ export class Funky implements __pb__.Message {
   }
 
   WriteTo(e: __pb__.Internal.Encoder): void {
+    {
+      const msg = this.monkey;
+      if (msg != null) {
+        let nested = new __pb__.Internal.Encoder();
+        msg.WriteTo(nested);
+        e.writeEncoder(nested, 1)
+      }
+    }
+    {
+      const msg = this.dokey;
+      if (msg != null) {
+        let nested = new __pb__.Internal.Encoder();
+        msg.WriteTo(nested);
+        e.writeEncoder(nested, 2)
+      }
+    }
   }
 }
 
