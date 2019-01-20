@@ -292,15 +292,6 @@ export namespace Internal {
       this.buf.writeView(4).setInt32(0, v, true);
     }
 
-    /*
-    writeVarInt32(v: number): void {
-      this.writeNumberAsVarint(v);
-    }
-
-    writeVarUint32(v: number): void {
-      this.writeNumberAsVarint(1); // fix
-    }*/
-
     writeZigZag32(v: number): void {
       this.writeNumberAsVarint(1); // fix
     }
@@ -310,11 +301,15 @@ export namespace Internal {
     }
 
     writeInt64(v: bigint): void {
-      this.buf.writeView(8); // fix
+      this.writeUint64(BigInt.asUintN(64, v));
     }
 
     writeUint64(v: bigint): void {
-      this.buf.writeView(8); // fix
+      let upper = Number(v >> 32n);
+      let lower = Number(v & 0xffffffffn);
+      let dv = this.buf.writeView(8);
+      dv.setUint32(0, lower, true);
+      dv.setUint32(4, upper, true);
     }
 
     writeEncoder(e: Encoder, fn: number) {
