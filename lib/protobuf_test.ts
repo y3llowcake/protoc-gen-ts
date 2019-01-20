@@ -2,14 +2,24 @@ import * as pb from "../lib/protobuf";
 
 import { diff } from "deep-diff";
 
-function testVarint(n: number, d: number[]): void {
+function testVarintNumber(n: number, d: number[]): void {
   let ua = new Uint8Array(d);
   let got = new pb.Internal.Decoder(ua).readVarintAsNumber();
   assertEqual(got, n, `readVarintAsNumber ${n}`);
   let enc = new pb.Internal.Encoder();
   enc.writeNumberAsVarint(n);
   let got2 = enc.buffer();
-  assertEqual(got2, ua, `readVarintAsNumber ${n}`);
+  assertEqual(got2, ua, `writeNumberAsVarint ${n}`);
+}
+
+function testVarintSignedNumber(n: number, d: number[]): void {
+  let ua = new Uint8Array(d);
+  let got = new pb.Internal.Decoder(ua).readVarintSignedAsNumber();
+  assertEqual(got, n, `readVarintSignedAsNumber ${n}`);
+  let enc = new pb.Internal.Encoder();
+  enc.writeNumberAsVarint(n);
+  let got2 = enc.buffer();
+  assertEqual(got2, ua, `writeNumberAsVarintSigned ${n}`);
 }
 
 function assertEqual(got: any, exp: any, msg: string): void {
@@ -21,8 +31,9 @@ function assertEqual(got: any, exp: any, msg: string): void {
   }
 }
 
-testVarint(0, [0x0]);
-testVarint(3, [0x3]);
-testVarint(300, [0xAC, 0x02]);
-testVarint(-1, [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01]);
-testVarint(-15, [0xF1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01]);
+testVarintNumber(0, [0x0]);
+testVarintNumber(3, [0x3]);
+testVarintNumber(300, [0xAC, 0x02]);
+
+testVarintSignedNumber(-1, [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01]);
+testVarintSignedNumber(-15, [0xF1, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01]);

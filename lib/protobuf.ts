@@ -27,7 +27,8 @@ export namespace Internal {
       this.offset = 0;
       this.buf = buf;
     }
-
+    
+    // The output of this is always unsigned and is not clamped to 64 bits.
     readVarint(): bigint {
       let val = 0n;
       let shift = 0n;
@@ -44,6 +45,14 @@ export namespace Internal {
         }
       }
       return val;
+    }
+
+    readVarintSigned(): bigint {
+      return BigInt.asIntN(64, this.readVarint());
+    }
+
+    readVarintSignedAsNumber(): number {
+      return Number(this.readVarintSigned());
     }
 
     readVarintAsNumber(): number {
@@ -233,16 +242,12 @@ export namespace Internal {
     }
 
     writeVarint(i: bigint): void {
+      // We must unsigned any negative input first.
+      i = BigInt.asUintN(64, i);
       while (true) {
-        //console.log("loop", i);
-        //if (i == -1n) {
-        //  throw new Error('shit bucket');
-        //}
         let b = Number(i & 0x7fn);
         i = i >> 7n;
-        //if (i == 0n) {
-        // cy u were here this jank be bonk.
-        if (i == 0n || i == -1n) {
+        if (i == 0n) {
           this.buf.write(b);
           return;
         }
