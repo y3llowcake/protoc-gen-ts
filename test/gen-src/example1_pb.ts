@@ -113,7 +113,7 @@ export class example1 implements __pb__.Message {
         this.aint32 = d.readVarInt32();
         break;
         case 4:
-        this.aint64 = d.readVarint();
+        this.aint64 = d.readVarintSigned();
         break;
         case 5:
         this.auint32 = d.readVarUint32();
@@ -149,13 +149,13 @@ export class example1 implements __pb__.Message {
         this.abytes = d.readBytes();
         break;
         case 20:
-        this.aenum1 = d.readVarintAsNumber();
+        this.aenum1 = d.readVarintSignedAsNumber();
         break;
         case 21:
-        this.aenum2 = d.readVarintAsNumber();
+        this.aenum2 = d.readVarintSignedAsNumber();
         break;
         case 22:
-        this.aenum22 = d.readVarintAsNumber();
+        this.aenum22 = d.readVarintSignedAsNumber();
         break;
         case 30:
         this.manystring.push(d.readString())
@@ -164,10 +164,10 @@ export class example1 implements __pb__.Message {
         if (wt == 2) {
           let packed = d.readDecoder();
           while (!packed.isEOF()) {
-            this.manyint64.push(packed.readVarint())
+            this.manyint64.push(packed.readVarintSigned())
           }
         } else {
-          this.manyint64.push(d.readVarint())
+          this.manyint64.push(d.readVarintSigned())
         }
         break;
         case 40:
@@ -197,7 +197,7 @@ export class example1 implements __pb__.Message {
         }
         break;
         case 49:
-        this.outoforder = d.readVarint();
+        this.outoforder = d.readVarintSigned();
         break;
         case 60:
         this.oostring = d.readString();

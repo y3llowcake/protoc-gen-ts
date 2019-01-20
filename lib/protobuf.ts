@@ -27,7 +27,7 @@ export namespace Internal {
       this.offset = 0;
       this.buf = buf;
     }
-    
+
     // The output of this is always unsigned and is not clamped to 64 bits.
     readVarint(): bigint {
       let val = 0n;

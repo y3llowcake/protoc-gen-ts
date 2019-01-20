@@ -372,8 +372,9 @@ func (f field) writeDecoder(w *writer, dec, wt string) {
 		reader = fmt.Sprintf("%s.readString()", dec)
 	case desc.FieldDescriptorProto_TYPE_BYTES:
 		reader = fmt.Sprintf("%s.readBytes()", dec)
-	case desc.FieldDescriptorProto_TYPE_INT64,
-		desc.FieldDescriptorProto_TYPE_UINT64:
+	case desc.FieldDescriptorProto_TYPE_INT64:
+		reader = fmt.Sprintf("%s.readVarintSigned()", dec)
+	case desc.FieldDescriptorProto_TYPE_UINT64:
 		reader = fmt.Sprintf("%s.readVarint()", dec)
 	case desc.FieldDescriptorProto_TYPE_INT32:
 		reader = fmt.Sprintf("%s.readVarInt32()", dec)
@@ -398,7 +399,7 @@ func (f field) writeDecoder(w *writer, dec, wt string) {
 	case desc.FieldDescriptorProto_TYPE_BOOL:
 		reader = fmt.Sprintf("%s.readBool()", dec)
 	case desc.FieldDescriptorProto_TYPE_ENUM:
-		reader = fmt.Sprintf("%s.readVarintAsNumber()", dec)
+		reader = fmt.Sprintf("%s.readVarintSignedAsNumber()", dec)
 	default:
 		panic(fmt.Errorf("unknown reader for fd type: %+v", f.fd.GetType()))
 	}
