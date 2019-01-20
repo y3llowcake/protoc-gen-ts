@@ -284,6 +284,15 @@ export class example1 implements __pb__.Message {
       e.writeTag(22, 0);
       e.writeNumberAsVarint(this.aenum22);
     }
+    for (let elem of this.manystring) {
+      e.writeTag(30, 2);
+      e.writeString(elem);
+    }
+    let packed = new __pb__.Internal.Encoder();
+    for (let elem of this.manyint64) {
+      packed.writeVarint(elem);
+    }
+    e.writeEncoder(packed, 31);
     if (this.outoforder != 0n) {
       e.writeTag(49, 0);
       e.writeVarint(this.outoforder);

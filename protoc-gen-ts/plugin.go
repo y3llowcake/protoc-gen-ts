@@ -465,7 +465,7 @@ func (f field) primitiveWriter(enc string) (string, string) {
 	return tagWriter, writer
 }
 
-func (f field) writeEncoder(w *writer, enc string, alwaysEmitDefaultValue bool) {
+func (f field) writeEncoder(w *writer, libMod *modRef, enc string, alwaysEmitDefaultValue bool) {
 	if f.isMap {
 		// TODO
 		return
@@ -490,10 +490,21 @@ func (f field) writeEncoder(w *writer, enc string, alwaysEmitDefaultValue bool) 
 		}
 		return
 	}
-
 	// repeated
+	// heh kinda hacky.
+	repeatWriter := strings.Replace(writer, "this."+f.varName(), "elem", 1)
 	if f.isPacked() {
+		packedWriter := strings.Replace(repeatWriter, enc, "packed", 1) // heh hax
+		w.p("let packed = new %s.Internal.Encoder();", libMod.alias)
+		w.p("for (let elem of this.%s) {", f.varName())
+		w.p(packedWriter + ";")
+		w.p("}")
+		w.p("%s.writeEncoder(packed, %d);", enc, f.fd.GetNumber())
 	} else {
+		w.p("for (let elem of this.%s) {", f.varName())
+		w.p(tagWriter + ";")
+		w.p(repeatWriter + ";")
+		w.p("}")
 	}
 }
 
@@ -571,7 +582,7 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 		// continue
 		// }
 		w.pdebug("maybe writing field %d, (%s)", f.fd.GetNumber(), f.fd.GetName())
-		f.writeEncoder(w, "e", false)
+		f.writeEncoder(w, libMod, "e", false)
 		w.pdebug("maybe wrote field %d, (%s)", f.fd.GetNumber(), f.fd.GetName())
 	}
 	w.p("}")

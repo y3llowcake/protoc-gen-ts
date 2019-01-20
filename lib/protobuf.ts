@@ -14,11 +14,10 @@ export function Unmarshal(raw: Uint8Array, m: Message): void {
 }
 
 export function Marshal(m: Message): Uint8Array {
-  let e = new Internal.Encoder(new Uint8Array(0));
+  let e = new Internal.Encoder();
   m.WriteTo(e);
   return e.buf;
 }
-
 
 export namespace Internal {
   export class Decoder {
@@ -176,58 +175,48 @@ export namespace Internal {
 
   export class Encoder {
     buf: Uint8Array;
-    
-    constructor(buf: Uint8Array) {
-      this.buf = buf;
+
+    constructor() {
+      this.buf = new Uint8Array(0);
     }
 
-    writeVarint(n: bigint): void {
-    }
+    writeVarint(n: bigint): void {}
 
-    writeNumberAsVarint(n: number): void {
-    }
+    writeNumberAsVarint(n: number): void {}
 
     writeTag(fn: number, wt: number): void {
       this.writeNumberAsVarint((fn << 3) | wt);
     }
 
-    writeBytes(v: Uint8Array): void {
-    }
+    writeBytes(v: Uint8Array): void {}
 
-    writeString(v: string): void {
-    }
+    writeString(v: string): void {}
 
-    writeBool(v: boolean): void {
-    }
+    writeBool(v: boolean): void {}
 
-    writeDouble(v: number): void {
-    }
+    writeDouble(v: number): void {}
 
-    writeFloat(v: number): void {
-    }
+    writeFloat(v: number): void {}
 
-    writeUint32(v: number): void {
-    }
+    writeUint32(v: number): void {}
 
-    writeInt32(v: number): void {
-    }
+    writeInt32(v: number): void {}
 
-    writeVarInt32(v: number): void {
-    }
+    writeVarInt32(v: number): void {}
 
-    writeVarUint32(v: number): void {
-    }
+    writeVarUint32(v: number): void {}
 
-    writeZigZag32(v: number): void {
-    }
+    writeZigZag32(v: number): void {}
 
-    writeZigZag64(v: bigint): void {
-    }
+    writeZigZag64(v: bigint): void {}
 
-    writeInt64(v: bigint): void {
-    }
+    writeInt64(v: bigint): void {}
 
-    writeUint64(v: bigint): void {
+    writeUint64(v: bigint): void {}
+
+    writeEncoder(e: Encoder, fn: number) {
+      this.writeTag(fn, 2);
+      //...
     }
   }
 }
