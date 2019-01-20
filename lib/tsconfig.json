@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": ["es6", "esnext.BigInt", "dom"],
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+  },
+  "include": [
+    "*.ts",
+  ],
+}
