@@ -16,7 +16,7 @@ export function Unmarshal(raw: Uint8Array, m: Message): void {
 export function Marshal(m: Message): Uint8Array {
   let e = new Internal.Encoder();
   m.WriteTo(e);
-  return e.buf;
+  return e.buffer();
 }
 
 export namespace Internal {
@@ -173,50 +173,141 @@ export namespace Internal {
     }
   }
 
-  export class Encoder {
-    buf: Uint8Array;
+  class Buffer {
+    private buf: Uint8Array;
+    private offset: number;
 
-    constructor() {
-      this.buf = new Uint8Array(0);
+    constructor(len: number) {
+      this.buf = new Uint8Array(len);
+      this.offset = 0;
     }
 
-    writeVarint(n: bigint): void {}
+    write(b: number): void {
+      this.maybeGrow(1);
+      this.buf[this.offset++] = b;
+    }
 
-    writeNumberAsVarint(n: number): void {}
+    writeBytes(a: Uint8Array): void {
+      this.maybeGrow(a.byteLength);
+      this.buf.set(a, this.offset);
+      this.offset += a.byteLength;
+    }
+
+    writeView(len: number): DataView {
+      this.maybeGrow(len);
+      let dv = new DataView(
+        this.buf.buffer,
+        this.buf.byteOffset + this.offset,
+        len
+      );
+      this.offset += len;
+      return dv;
+    }
+
+    maybeGrow(n: number): void {
+      if (this.offset + n < this.buf.byteLength) {
+        return;
+      }
+      // TODO ArrayBuffer.transfer?
+      let nbuf = new Uint8Array(this.buf.byteLength * 2);
+      nbuf.set(this.buf);
+      this.buf = nbuf;
+    }
+
+    buffer(): Uint8Array {
+      return new Uint8Array(this.buf.buffer, this.buf.byteOffset, this.offset);
+    }
+  }
+
+  export class Encoder {
+    private buf: Buffer;
+    private offset: number;
+
+    constructor() {
+      this.buf = new Buffer(64);
+      this.offset = 0;
+    }
+
+    writeVarint(i: bigint): void {
+      while (true) {
+        let b = Number(i & 0x7fn);
+        i = i >> 7n;
+        if (i == 0n) {
+          this.buf.write(b);
+          return;
+        }
+        this.buf.write(b | 0x80); // set the top bit.
+      }
+    }
+
+    writeNumberAsVarint(n: number): void {
+      this.writeVarint(BigInt(n));
+    }
 
     writeTag(fn: number, wt: number): void {
       this.writeNumberAsVarint((fn << 3) | wt);
     }
 
-    writeBytes(v: Uint8Array): void {}
+    writeBytes(v: Uint8Array): void {
+      this.writeNumberAsVarint(v.byteLength);
+      this.buf.writeBytes(v);
+    }
 
-    writeString(v: string): void {}
+    writeString(v: string): void {
+      this.writeBytes(new TextEncoder().encode(v));
+    }
 
-    writeBool(v: boolean): void {}
+    writeBool(v: boolean): void {
+      this.writeNumberAsVarint(v ? 1 : 0);
+    }
 
-    writeDouble(v: number): void {}
+    writeDouble(v: number): void {
+      this.buf.writeView(8).setFloat64(0, v, true);
+    }
 
-    writeFloat(v: number): void {}
+    writeFloat(v: number): void {
+      this.buf.writeView(4).setFloat32(0, v, true);
+    }
 
-    writeUint32(v: number): void {}
+    writeUint32(v: number): void {
+      this.buf.writeView(4).setUint32(0, v, true);
+    }
 
-    writeInt32(v: number): void {}
+    writeInt32(v: number): void {
+      this.buf.writeView(4).setInt32(0, v, true);
+    }
 
-    writeVarInt32(v: number): void {}
+    writeVarInt32(v: number): void {
+      this.writeNumberAsVarint(1); // fix
+    }
 
-    writeVarUint32(v: number): void {}
+    writeVarUint32(v: number): void {
+      this.writeNumberAsVarint(1); // fix
+    }
 
-    writeZigZag32(v: number): void {}
+    writeZigZag32(v: number): void {
+      this.writeNumberAsVarint(1); // fix
+    }
 
-    writeZigZag64(v: bigint): void {}
+    writeZigZag64(v: bigint): void {
+      this.writeNumberAsVarint(1); // fix
+    }
 
-    writeInt64(v: bigint): void {}
+    writeInt64(v: bigint): void {
+      this.buf.writeView(8); // fix
+    }
 
-    writeUint64(v: bigint): void {}
+    writeUint64(v: bigint): void {
+      this.buf.writeView(8); // fix
+    }
 
     writeEncoder(e: Encoder, fn: number) {
       this.writeTag(fn, 2);
-      //...
+      this.writeBytes(e.buffer());
+    }
+
+    buffer(): Uint8Array {
+      return this.buf.buffer();
     }
   }
 }
