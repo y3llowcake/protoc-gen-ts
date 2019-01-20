@@ -3,3 +3,4 @@ bazel-*
 *.js
 node_modules
 package-lock.json
+conformance/gen-src
