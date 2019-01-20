@@ -32,7 +32,7 @@ export class example2 implements __pb__.Message {
   WriteTo(e: __pb__.Internal.Encoder): void {
     if (this.zomg != 0) {
       e.writeTag(1, 0);
-      e.writeVarInt32(this.zomg);
+      e.writeNumberAsVarint(this.zomg);
     }
   }
 }

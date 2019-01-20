@@ -204,12 +204,16 @@ export namespace Internal {
       return dv;
     }
 
-    maybeGrow(n: number): void {
-      if (this.offset + n < this.buf.byteLength) {
+    maybeGrow(need: number): void {
+      if (this.offset + need < this.buf.byteLength) {
         return;
       }
-      // TODO ArrayBuffer.transfer?
-      let nbuf = new Uint8Array(this.buf.byteLength * 2);
+      // TODO ArrayBuffer.transfer
+      let nsize = this.buf.byteLength * 2;
+      while (nsize - this.offset < need) {
+        nsize *= 2;
+      }
+      let nbuf = new Uint8Array(nsize);
       nbuf.set(this.buf);
       this.buf = nbuf;
     }
@@ -230,9 +234,15 @@ export namespace Internal {
 
     writeVarint(i: bigint): void {
       while (true) {
+        //console.log("loop", i);
+        //if (i == -1n) {
+        //  throw new Error('shit bucket');
+        //}
         let b = Number(i & 0x7fn);
         i = i >> 7n;
-        if (i == 0n) {
+        //if (i == 0n) {
+        // cy u were here this jank be bonk.
+        if (i == 0n || i == -1n) {
           this.buf.write(b);
           return;
         }
@@ -277,13 +287,14 @@ export namespace Internal {
       this.buf.writeView(4).setInt32(0, v, true);
     }
 
+    /*
     writeVarInt32(v: number): void {
-      this.writeNumberAsVarint(1); // fix
+      this.writeNumberAsVarint(v);
     }
 
     writeVarUint32(v: number): void {
       this.writeNumberAsVarint(1); // fix
-    }
+    }*/
 
     writeZigZag32(v: number): void {
       this.writeNumberAsVarint(1); // fix

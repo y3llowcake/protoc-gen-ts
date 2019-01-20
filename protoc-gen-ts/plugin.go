@@ -434,10 +434,9 @@ func (f field) primitiveWriter(enc string) (string, string) {
 	case desc.FieldDescriptorProto_TYPE_INT64,
 		desc.FieldDescriptorProto_TYPE_UINT64:
 		writer = fmt.Sprintf("%s.writeVarint(this.%s)", enc, f.varName())
-	case desc.FieldDescriptorProto_TYPE_INT32:
-		writer = fmt.Sprintf("%s.writeVarInt32(this.%s)", enc, f.varName())
-	case desc.FieldDescriptorProto_TYPE_UINT32:
-		writer = fmt.Sprintf("%s.writeVarUint32(this.%s)", enc, f.varName())
+	case desc.FieldDescriptorProto_TYPE_INT32,
+		desc.FieldDescriptorProto_TYPE_UINT32:
+		writer = fmt.Sprintf("%s.writeNumberAsVarint(this.%s)", enc, f.varName())
 	case desc.FieldDescriptorProto_TYPE_SINT64:
 		writer = fmt.Sprintf("%s.writeZigZag64(this.%s)", enc, f.varName())
 	case desc.FieldDescriptorProto_TYPE_SINT32:

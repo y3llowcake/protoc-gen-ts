@@ -33,7 +33,7 @@ export class example2 implements __pb__.Message {
   WriteTo(e: __pb__.Internal.Encoder): void {
     if (this.aint32 != 0) {
       e.writeTag(1, 0);
-      e.writeVarInt32(this.aint32);
+      e.writeNumberAsVarint(this.aint32);
     }
   }
 }
@@ -222,7 +222,7 @@ export class example1 implements __pb__.Message {
     }
     if (this.aint32 != 0) {
       e.writeTag(3, 0);
-      e.writeVarInt32(this.aint32);
+      e.writeNumberAsVarint(this.aint32);
     }
     if (this.aint64 != 0n) {
       e.writeTag(4, 0);
@@ -230,7 +230,7 @@ export class example1 implements __pb__.Message {
     }
     if (this.auint32 != 0) {
       e.writeTag(5, 0);
-      e.writeVarUint32(this.auint32);
+      e.writeNumberAsVarint(this.auint32);
     }
     if (this.auint64 != 0n) {
       e.writeTag(6, 0);
@@ -343,7 +343,7 @@ export class example1 implements __pb__.Message {
     }
     if (this.ooint != 0) {
       e.writeTag(61, 0);
-      e.writeVarInt32(this.ooint);
+      e.writeNumberAsVarint(this.ooint);
     }
   }
 }
