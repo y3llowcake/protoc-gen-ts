@@ -70,7 +70,18 @@ pb.Unmarshal(ua, got);
 
 let diffs = diff(got, example1());
 if (diffs != null && diffs.length > 0) {
-  console.log("found diffs, got (lhs) vs exp (rhs)");
+  console.log("found diffs after Unmarshal; got (lhs) vs exp (rhs)");
+  console.table(diffs);
+  throw new Error("found diffs");
+}
+
+ua = pb.Marshal(example1());
+got = new e1pb.example1();
+pb.Unmarshal(ua, got);
+
+diffs = diff(got, example1());
+if (diffs != null && diffs.length > 0) {
+  console.log("found diffs after Re-Marshal; got (lhs) vs exp (rhs)");
   console.table(diffs);
   throw new Error("found diffs");
 }
