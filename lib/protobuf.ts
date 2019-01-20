@@ -293,11 +293,13 @@ export namespace Internal {
     }
 
     writeZigZag32(v: number): void {
-      this.writeNumberAsVarint(1); // fix
+      let i = BigInt(v & 0xffffffff);
+      i = ((i << 1n) ^ ((i << 32n) >> 63n)) & 0xffffffffn;
+      this.writeVarint(i);
     }
 
     writeZigZag64(v: bigint): void {
-      this.writeNumberAsVarint(1); // fix
+      this.writeVarint((v << 1n) ^ (v >> 63n));
     }
 
     writeInt64(v: bigint): void {
@@ -305,11 +307,9 @@ export namespace Internal {
     }
 
     writeUint64(v: bigint): void {
-      let upper = Number(v >> 32n);
-      let lower = Number(v & 0xffffffffn);
       let dv = this.buf.writeView(8);
-      dv.setUint32(0, lower, true);
-      dv.setUint32(4, upper, true);
+      dv.setUint32(0, Number(v & 0xffffffffn), true);
+      dv.setUint32(4, Number(v >> 32n), true);
     }
 
     writeEncoder(e: Encoder, fn: number) {
