@@ -4,3 +4,4 @@ bazel-*
 node_modules
 package-lock.json
 conformance/gen-src
+conformance/failing_tests.txt
