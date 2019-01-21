@@ -125,6 +125,13 @@ func writeFile(w *writer, fdp *desc.FileDescriptorProto, rootNs *Namespace, libM
 		writeDescriptor(w, dp, ns, mr, libMod, nil)
 	}
 
+	// Services
+	if genService {
+		for _, sdp := range fdp.Service {
+			writeService(w, sdp, fdp.GetPackage(), ns, mr, libMod)
+		}
+	}
+
 	imports := fmt.Sprintf("import * as %s from \"%s\"\n", libMod.alias, libMod.path)
 	for _, mod := range mr.references {
 		imports += fmt.Sprintf("import * as %s from \"%s\"\n", mod.alias, mod.path)
@@ -650,6 +657,63 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 	for _, ndp := range dp.NestedType {
 		writeDescriptor(w, ndp, ns, mr, libMod, nextNames)
 	}
+}
+
+type method struct {
+	mdp                               *desc.MethodDescriptorProto
+	TsName, InputTsName, OutputTsName string
+}
+
+func newMethod(mdp *desc.MethodDescriptorProto, ns *Namespace, mr *moduleResolver) method {
+	m := method{mdp: mdp}
+	m.TsName = mdp.GetName()
+
+	_, typeName, _, typeFdp := ns.FindFullyQualifiedName(mdp.GetInputType())
+	m.InputTsName = typeName
+	if mod := mr.ToRelativeModule(typeFdp); mod != nil {
+		m.InputTsName = mod.alias + "." + m.InputTsName
+	}
+
+	_, typeName, _, typeFdp = ns.FindFullyQualifiedName(mdp.GetOutputType())
+	m.OutputTsName = typeName
+	if mod := mr.ToRelativeModule(typeFdp); mod != nil {
+		m.OutputTsName = mod.alias + "." + m.OutputTsName
+	}
+	return m
+}
+
+func (m method) isStreaming() bool {
+	return m.mdp.GetClientStreaming() || m.mdp.GetServerStreaming()
+}
+
+func writeService(w *writer, sdp *desc.ServiceDescriptorProto, pkg string, ns *Namespace, mr *moduleResolver, libMod *modRef) {
+	methods := []method{}
+	for _, mdp := range sdp.Method {
+		methods = append(methods, newMethod(mdp, ns, mr))
+	}
+	fqname := sdp.GetName()
+	if pkg != "" {
+		fqname = pkg + "." + fqname
+	}
+
+	// Client
+	w.p("export class %sClient {", sdp.GetName())
+	w.p("private cc: %s.Grpc.ClientConn;", libMod.alias)
+	w.p("constructor(cc: %s.Grpc.ClientConn) {", libMod.alias)
+	w.p("this.cc = cc;")
+	w.p("}")
+	for _, m := range methods {
+		if m.isStreaming() {
+			continue
+		}
+		w.ln()
+		w.p("async %s(ctx: %s.Grpc.Context, min: %s, ...co: %s.Grpc.CallOption[]): Promise<%s> {", m.TsName, libMod.alias, m.InputTsName, libMod.alias, m.OutputTsName)
+		w.p("let mout = new %s();", m.OutputTsName)
+		w.p("await this.cc.Invoke(ctx, '/%s/%s', min, mout, ...co);", fqname, m.mdp.GetName())
+		w.p("return mout;")
+		w.p("}")
+	}
+	w.p("}")
 }
 
 // writer is a little helper for output printing. It indents code

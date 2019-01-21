@@ -470,3 +470,15 @@ export namespace example1 {
   }
 }
 
+export class ExampleServiceClient {
+  private cc: __pb__.Grpc.ClientConn;
+  constructor(cc: __pb__.Grpc.ClientConn) {
+    this.cc = cc;
+  }
+
+  async OneToTwo(ctx: __pb__.Grpc.Context, min: example1, ...co: __pb__.Grpc.CallOption[]): Promise<example2> {
+    let mout = new example2();
+    await this.cc.Invoke(ctx, '/foo.bar.ExampleService/OneToTwo', min, mout, ...co);
+    return mout;
+  }
+}

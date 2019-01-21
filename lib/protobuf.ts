@@ -1,4 +1,4 @@
-class ProtobufError extends Error {
+export class ProtobufError extends Error {
   constructor(message: string) {
     super(message);
   }
@@ -17,6 +17,53 @@ export function Marshal(m: Message): Uint8Array {
   let e = new Internal.Encoder();
   m.WriteTo(e);
   return e.buffer();
+}
+
+// TODO move to a grpc package.
+export namespace Grpc {
+  export enum Code {
+    OK = 0,
+    Canceled = 1,
+    Unknown = 2,
+    InvalidArgument = 3,
+    DeadlineExceeded = 4,
+    NotFound = 5,
+    AlreadyExists = 6,
+    PermissionDenied = 7,
+    ResourceExhausted = 8,
+    FailedPrecondition = 9,
+    Aborted = 10,
+    OutOfRange = 11,
+    Unimplemented = 12,
+    Internal = 13,
+    Unavailable = 14,
+    DataLoss = 15,
+    Unauthenticated = 16
+  }
+
+  export class GrpcError extends Error {
+    public grpc_code: Code;
+    public grpc_message: string;
+    constructor(code: Code, msg: string) {
+      super(`grpc exception: ${code}; ${msg}`);
+      this.grpc_code = code;
+      this.grpc_message = msg;
+    }
+  }
+
+  export interface Context {}
+
+  export interface CallOption {}
+
+  export interface ClientConn {
+    Invoke(
+      ctx: Context,
+      method: string,
+      min: Message,
+      mout: Message,
+      ...co: CallOption[]
+    ): Promise<void>;
+  }
 }
 
 export namespace Internal {
