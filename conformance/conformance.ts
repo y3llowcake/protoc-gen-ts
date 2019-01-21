@@ -2,7 +2,6 @@ import * as pb from "./../lib/protobuf";
 import * as conf from "./gen-src/third_party/google/protobuf/conformance/conformance_pb";
 import * as tm3 from "./gen-src/google/protobuf/test_messages_proto3_pb";
 
-
 function log(s: string): void {
   console.error("[CONFORMANCE] " + s);
 }
@@ -20,23 +19,33 @@ function conformanceRaw(raw: Uint8Array): Uint8Array {
 // https://github.com/protocolbuffers/protobuf/blob/master/conformance/conformance.proto
 function conformance(req: conf.ConformanceRequest): conf.ConformanceResponse {
   let resp = new conf.ConformanceResponse();
-  log('message type: ' + req.message_type);
+  log("message type: " + req.message_type);
   switch (req.message_type) {
-    case 'protobuf_test_messages.proto3.TestAllTypesProto3':
+    case "protobuf_test_messages.proto3.TestAllTypesProto3":
       break;
     default:
       resp.skipped = "unsupported message type";
       return resp;
   }
 
-  if (req.json_payload != '') {
+  if (req.json_payload != "") {
     resp.skipped = "unsupported payload type";
     return resp;
   }
 
+  if (req.requested_output_format != conf.WireFormat.PROTOBUF) {
+    resp.skipped = "unsupported output format";
+    return resp;
+  }
+
   let m = new tm3.TestAllTypesProto3();
-  pb.Unmarshal(req.protobuf_payload, m);
-  resp.protobuf_payload = pb.Marshal(m);
+  try {
+    pb.Unmarshal(req.protobuf_payload, m);
+    resp.protobuf_payload = pb.Marshal(m);
+  } catch (e) {
+    resp.parse_error = e;
+    log("parse error: " + e);
+  }
   return resp;
 }
 
@@ -66,7 +75,7 @@ process.stdin.on("data", chunk => {
       new Uint8Array(buf.buffer, buf.byteOffset + 4, len)
     );
     let lenbuf = new ArrayBuffer(4);
-    new DataView(lenbuf).setInt32(0, rawout.length, true);
+    new DataView(lenbuf).setUint32(0, rawout.length, true);
     log("writing response bytes " + rawout.length);
     write(new Uint8Array(lenbuf));
     write(rawout);
