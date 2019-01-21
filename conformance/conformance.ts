@@ -2,8 +2,10 @@ import * as pb from "./../lib/protobuf";
 import * as conf from "./gen-src/third_party/google/protobuf/conformance/conformance_pb";
 import * as tm3 from "./gen-src/google/protobuf/test_messages_proto3_pb";
 
+var logging = false;
+
 function log(s: string): void {
-  console.error("[CONFORMANCE] " + s);
+  // console.error("[CONFORMANCE] " + s);
 }
 
 function write(a: Uint8Array): void {
@@ -49,13 +51,16 @@ function conformance(req: conf.ConformanceRequest): conf.ConformanceResponse {
   return resp;
 }
 
-log("start");
+if (process.argv.length > 2) {
+  console.log("command line mode", process.argv);
+  process.exit(0);
+}
 
+log("entering stdin pipe...");
 process.stdin.on("end", () => {
   log("eof received; fin");
   process.exit(0);
 });
-
 // https://github.com/protocolbuffers/protobuf/blob/master/conformance/conformance_test_runner.cc
 var buf = Buffer.alloc(0);
 process.stdin.on("data", chunk => {
