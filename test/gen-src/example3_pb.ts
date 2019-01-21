@@ -25,7 +25,7 @@ export class Donkey implements __pb__.Message {
   }
 
   WriteTo(e: __pb__.Internal.Encoder): void {
-    if (this.hi != "") {
+    if (this.hi !== "") {
       e.writeTag(1, 2);
       e.writeString(this.hi);
     }
@@ -62,7 +62,7 @@ export class Funky implements __pb__.Message {
   WriteTo(e: __pb__.Internal.Encoder): void {
     {
       const msg = this.monkey;
-      if (msg != null) {
+      if (msg !== null) {
         let nested = new __pb__.Internal.Encoder();
         msg.WriteTo(nested);
         e.writeEncoder(nested, 1)
@@ -70,7 +70,7 @@ export class Funky implements __pb__.Message {
     }
     {
       const msg = this.dokey;
-      if (msg != null) {
+      if (msg !== null) {
         let nested = new __pb__.Internal.Encoder();
         msg.WriteTo(nested);
         e.writeEncoder(nested, 2)
@@ -101,7 +101,7 @@ export namespace Funky {
     }
 
     WriteTo(e: __pb__.Internal.Encoder): void {
-      if (this.hi != "") {
+      if (this.hi !== "") {
         e.writeTag(1, 2);
         e.writeString(this.hi);
       }
