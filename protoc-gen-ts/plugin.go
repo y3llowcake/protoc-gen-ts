@@ -251,7 +251,7 @@ func (f field) tsType() string {
 		return "boolean"
 	case desc.FieldDescriptorProto_TYPE_MESSAGE,
 		desc.FieldDescriptorProto_TYPE_GROUP:
-		return f.typeTsName + " | null"
+		return f.typeTsName
 	case desc.FieldDescriptorProto_TYPE_ENUM:
 		return f.typeTsName
 	default:
@@ -262,8 +262,7 @@ func (f field) tsType() string {
 
 func (f field) defaultValue() string {
 	if f.isMap {
-		k, v := f.mapFields()
-		return fmt.Sprintf("new Map<%s, %s>()", k.tsType(), v.labeledType())
+		return fmt.Sprintf("new %s()", f.labeledType())
 	}
 	if f.isRepeated() {
 		return "[]"
@@ -311,15 +310,19 @@ func (f field) isPacked() bool {
 func (f field) labeledType() string {
 	if f.isMap {
 		k, v := f.mapFields()
-		return fmt.Sprintf("Map<%s, %s>", k.tsType(), v.labeledType())
+		return fmt.Sprintf("Map<%s, %s>", k.tsType(), v.tsType())
 	}
 	if f.isRepeated() {
 		return f.tsType() + "[]"
 	}
-	if f.fd.GetType() == desc.FieldDescriptorProto_TYPE_MESSAGE {
-		return f.tsType()
+	if f.isMessage() {
+		return f.tsType() + " | null"
 	}
 	return f.tsType()
+}
+
+func (f field) isMessage() bool {
+	return f.fd.GetType() == desc.FieldDescriptorProto_TYPE_MESSAGE || f.fd.GetType() == desc.FieldDescriptorProto_TYPE_GROUP
 }
 
 func (f field) isRepeated() bool {
@@ -362,12 +365,18 @@ func (f field) writeDecoder(w *writer, dec, wt string) {
 		w.p("{")
 		w.p("let obj = new %s();", f.typeTsName)
 		w.p("obj.MergeFrom(%s.readDecoder());", dec)
-		w.p("this.%s.set(obj.key, obj.value);", f.varName())
+
+		_, v := f.mapFields()
+		if v.isMessage() {
+			w.p("this.%s.set(obj.key, obj.value == null ? new %s() : obj.value);", f.varName(), v.tsType())
+		} else {
+			w.p("this.%s.set(obj.key, obj.value);", f.varName())
+		}
 		w.p("}")
 		// TODO
 		return
 	}
-	if f.fd.GetType() == desc.FieldDescriptorProto_TYPE_MESSAGE || f.fd.GetType() == desc.FieldDescriptorProto_TYPE_GROUP {
+	if f.isMessage() {
 		if f.isRepeated() {
 			w.p("{")
 			w.p("let obj = new %s();", f.typeTsName)
@@ -493,7 +502,7 @@ func (f field) writeEncoder(w *writer, libMod *modRef, enc string, alwaysEmitDef
 		return
 	}
 
-	if f.fd.GetType() == desc.FieldDescriptorProto_TYPE_MESSAGE || f.fd.GetType() == desc.FieldDescriptorProto_TYPE_GROUP {
+	if f.isMessage() {
 		w.p("{")
 		if f.isRepeated() {
 			w.p("for (const msg of this.%s) {", f.varName())
@@ -527,11 +536,13 @@ func (f field) writeEncoder(w *writer, libMod *modRef, enc string, alwaysEmitDef
 	repeatWriter := strings.Replace(writer, "this."+f.varName(), "elem", 1)
 	if f.isPacked() {
 		packedWriter := strings.Replace(repeatWriter, enc, "packed", 1) // heh hax
-		w.p("let packed = new %s.Internal.Encoder();", libMod.alias)
+		w.p("{")
+		w.p("const packed = new %s.Internal.Encoder();", libMod.alias)
 		w.p("for (let elem of this.%s) {", f.varName())
 		w.p(packedWriter + ";")
 		w.p("}")
 		w.p("%s.writeEncoder(packed, %d);", enc, f.fd.GetNumber())
+		w.p("}")
 	} else {
 		w.p("for (let elem of this.%s) {", f.varName())
 		w.p(tagWriter + ";")

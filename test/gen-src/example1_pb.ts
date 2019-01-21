@@ -63,7 +63,7 @@ export class example1 implements __pb__.Message {
   aexample22: example2 | null;
   aexample23: ___example2_pb.example2 | null;
   amap: Map<string, string>;
-  amap2: Map<string, ___example2_pb.example2 | null>;
+  amap2: Map<string, ___example2_pb.example2>;
   outoforder: bigint;
   oostring: string;
   ooint: number;
@@ -93,7 +93,7 @@ export class example1 implements __pb__.Message {
     this.aexample22 = null;
     this.aexample23 = null;
     this.amap = new Map<string, string>();
-    this.amap2 = new Map<string, ___example2_pb.example2 | null>();
+    this.amap2 = new Map<string, ___example2_pb.example2>();
     this.outoforder = 0n;
     this.oostring = "";
     this.ooint = 0;
@@ -193,7 +193,7 @@ export class example1 implements __pb__.Message {
         {
           let obj = new example1.Amap2Entry();
           obj.MergeFrom(d.readDecoder());
-          this.amap2.set(obj.key, obj.value);
+          this.amap2.set(obj.key, obj.value == null ? new ___example2_pb.example2() : obj.value);
         }
         break;
         case 49:
@@ -288,11 +288,13 @@ export class example1 implements __pb__.Message {
       e.writeTag(30, 2);
       e.writeString(elem);
     }
-    let packed = new __pb__.Internal.Encoder();
-    for (let elem of this.manyint64) {
-      packed.writeVarint(elem);
+    {
+      const packed = new __pb__.Internal.Encoder();
+      for (let elem of this.manyint64) {
+        packed.writeVarint(elem);
+      }
+      e.writeEncoder(packed, 31);
     }
-    e.writeEncoder(packed, 31);
     {
       const msg = this.aexample2;
       if (msg != null) {

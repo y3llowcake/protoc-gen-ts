@@ -1,5 +1,7 @@
 import * as pb from "./../lib/protobuf";
 import * as conf from "./gen-src/third_party/google/protobuf/conformance/conformance_pb";
+import * as tm3 from "./gen-src/google/protobuf/test_messages_proto3_pb";
+
 
 function log(s: string): void {
   console.error("[CONFORMANCE] " + s);
@@ -10,13 +12,31 @@ function write(a: Uint8Array): void {
 }
 
 function conformanceRaw(raw: Uint8Array): Uint8Array {
-  let creq = new conf.ConformanceRequest();
-  pb.Unmarshal(raw, creq);
-  return pb.Marshal(conformance(creq));
+  let req = new conf.ConformanceRequest();
+  pb.Unmarshal(raw, req);
+  return pb.Marshal(conformance(req));
 }
 
+// https://github.com/protocolbuffers/protobuf/blob/master/conformance/conformance.proto
 function conformance(req: conf.ConformanceRequest): conf.ConformanceResponse {
   let resp = new conf.ConformanceResponse();
+  log('message type: ' + req.message_type);
+  switch (req.message_type) {
+    case 'protobuf_test_messages.proto3.TestAllTypesProto3':
+      break;
+    default:
+      resp.skipped = "unsupported message type";
+      return resp;
+  }
+
+  if (req.json_payload != '') {
+    resp.skipped = "unsupported payload type";
+    return resp;
+  }
+
+  let m = new tm3.TestAllTypesProto3();
+  pb.Unmarshal(req.protobuf_payload, m);
+  resp.protobuf_payload = pb.Marshal(m);
   return resp;
 }
 
@@ -27,6 +47,7 @@ process.stdin.on("end", () => {
   process.exit(0);
 });
 
+// https://github.com/protocolbuffers/protobuf/blob/master/conformance/conformance_test_runner.cc
 var buf = Buffer.alloc(0);
 process.stdin.on("data", chunk => {
   log("on data...");
