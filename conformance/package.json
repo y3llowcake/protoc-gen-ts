@@ -1,5 +1,5 @@
 {
-  "name": "protobuf",
+  "name": "conformance-test",
   "version": "1.0.0",
   "description": "",
   "main": "test.js",
@@ -9,8 +9,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/deep-diff": "^1.0.0",
-    "@types/node": "^10.12.18",
-    "deep-diff": "^1.0.2"
+    "@types/node": "^10.12.18"
   }
 }

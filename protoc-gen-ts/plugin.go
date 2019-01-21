@@ -47,7 +47,22 @@ func gen(req *ppb.CodeGeneratorRequest) *ppb.CodeGeneratorResponse {
 	for _, f := range req.FileToGenerate {
 		fileToGenerate[f] = true
 	}
-	genService := strings.Contains(req.GetParameter(), "plugin=grpc")
+
+	optGenService := false
+	optLibraryImport := "protobuf"
+
+	params := strings.Split(req.GetParameter(), ",")
+	for _, param := range params {
+		if param == "plugin=grpc" {
+			optGenService = true
+			continue
+		}
+		if strings.HasPrefix(param, "library_import=") {
+			optLibraryImport = strings.TrimPrefix(param, "library_import=")
+			continue
+		}
+		panic("unknown compiler option: " + param)
+	}
 
 	rootns := NewEmptyNamespace()
 	for _, fdp := range req.ProtoFile {
@@ -69,10 +84,10 @@ func gen(req *ppb.CodeGeneratorRequest) *ppb.CodeGeneratorResponse {
 
 		libMod := &modRef{
 			alias: "__pb__",
-			path:  "../../lib/protobuf",
+			path:  optLibraryImport,
 		}
 
-		imports := writeFile(w, fdp, rootns, libMod, genService)
+		imports := writeFile(w, fdp, rootns, libMod, optGenService)
 		content := strings.Replace(b.String(), importPlaceholder, imports, 1)
 		f.Content = proto.String(content)
 		resp.File = append(resp.File, f)
