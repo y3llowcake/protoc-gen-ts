@@ -167,10 +167,8 @@ func (m *moduleResolver) ToRelativeModule(fdp *desc.FileDescriptorProto) *modRef
 }
 
 type oneof struct {
-	descriptor                                                  *desc.OneofDescriptorProto
-	fields                                                      []*field
-	name, interfaceName, enumTypeName, classPrefix, notsetClass string
-	// v2
+	odp    *desc.OneofDescriptorProto
+	fields []*field
 }
 
 type field struct {
@@ -578,6 +576,68 @@ func writeEnum(w *writer, edp *desc.EnumDescriptorProto, prefixNames []string) {
 	w.ln()
 }
 
+func writeOneof(w *writer, oo *oneof, libMod *modRef, prefixNames []string) {
+	if len(prefixNames) > 0 {
+		w.p("export namespace %s {", strings.Join(append(prefixNames, oo.odp.GetName()), "."))
+	}
+
+	classNames := []string{fmt.Sprintf("%s.OneofNotSet", libMod.alias)}
+	classNames = []string{}
+	for _, field := range oo.fields {
+		w.p("export class %s {", field.fd.GetName())
+		w.p("static readonly kind = %d;", field.fd.GetNumber())
+		w.p("readonly kind = %d;", field.fd.GetNumber())
+		w.p("value: %s;", field.labeledType())
+		w.p("constructor(v: %s) {", field.labeledType())
+		w.p("this.value = v;")
+		w.p("}")
+		classNames = append(classNames, field.fd.GetName())
+		w.p("}")
+		w.ln()
+
+	}
+
+	typeName := oo.odp.GetName() + "_oneof_t"
+	union := strings.Join(classNames, " | ")
+	w.p("type %s = %s;", typeName, union)
+	w.ln()
+	w.p("function WriteTo(oo: %s, e: %s.Internal.Encoder):void {", typeName, libMod.alias)
+	w.p("switch (oo.kind) {")
+	for _, f := range oo.fields {
+		value := fmt.Sprintf("(oo as %s).value", f.fd.GetName())
+		w.p("case %d:", f.fd.GetNumber())
+
+		if f.isMessage() {
+			w.p("{")
+			w.p("let nested = new %s.Internal.Encoder();", libMod.alias)
+			w.p("let msg = %s;", value)
+			w.p("if (msg != null) {")
+			w.p("msg.WriteTo(nested);")
+			w.p("}")
+			w.p("e.writeEncoder(nested, %d);", f.fd.GetNumber())
+			w.p("return")
+			w.p("}")
+			continue
+		}
+
+		tagWriter, writer := f.primitiveWriter("e")
+		// heh kinda hacky.
+		writer = strings.Replace(writer, "this."+f.varName(), value, 1)
+
+		w.p(tagWriter + ";")
+		w.p(writer + ";")
+		w.p("return;")
+	}
+
+	w.p("}") // switch
+	w.p("}") // WriteTo
+
+	if len(prefixNames) > 0 {
+		w.p("}") // namespace
+	}
+	w.ln()
+}
+
 func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *moduleResolver, libMod *modRef, prefixNames []string) {
 	nextNames := append(prefixNames, dp.GetName())
 
@@ -585,6 +645,35 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 	fields := []*field{}
 	for _, fd := range dp.Field {
 		fields = append(fields, newField(fd, ns, mr))
+	}
+
+	// Oneofs: group each field by it's corresponding oneof.
+	oneofFields := map[int32][]*field{}
+	for _, field := range fields {
+		if !field.isOneofMember() {
+			continue
+		}
+		i := field.fd.GetOneofIndex()
+		l := oneofFields[i]
+		l = append(l, field)
+		oneofFields[i] = l
+	}
+
+	// Wrap oneofs.
+	oneofs := []*oneof{}
+	for i, od := range dp.OneofDecl {
+		oo := &oneof{
+			odp:    od,
+			fields: oneofFields[int32(i)],
+		}
+		oneofs = append(oneofs, oo)
+	}
+
+	// Now point each field at it's oneof.
+	for _, field := range fields {
+		if field.isOneofMember() {
+			field.oneof = oneofs[field.fd.GetOneofIndex()]
+		}
 	}
 
 	if len(prefixNames) > 0 {
@@ -647,6 +736,11 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 		w.p("}") // namespace
 	}
 	w.ln()
+
+	// Write oneofs
+	for _, oo := range oneofs {
+		writeOneof(w, oo, libMod, nextNames)
+	}
 
 	// Write enums.
 	for _, edp := range dp.EnumType {

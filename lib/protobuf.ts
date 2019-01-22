@@ -19,6 +19,11 @@ export function Marshal(m: Message): Uint8Array {
   return e.buffer();
 }
 
+export class OneofNotSet {
+  static readonly kind = 0;
+  readonly kind = 0;
+}
+
 // TODO move to a grpc package.
 export namespace Grpc {
   export enum Code {

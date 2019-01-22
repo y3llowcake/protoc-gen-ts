@@ -350,6 +350,41 @@ export class example1 implements __pb__.Message {
   }
 }
 
+export namespace example1.aoneof {
+  export class oostring {
+    static readonly kind = 60;
+    readonly kind = 60;
+    value: string;
+    constructor(v: string) {
+      this.value = v;
+    }
+  }
+
+  export class ooint {
+    static readonly kind = 61;
+    readonly kind = 61;
+    value: number;
+    constructor(v: number) {
+      this.value = v;
+    }
+  }
+
+  type aoneof_oneof_t = oostring | ooint;
+
+  function WriteTo(oo: aoneof_oneof_t, e: __pb__.Internal.Encoder):void {
+    switch (oo.kind) {
+      case 60:
+      e.writeTag(60, 2);
+      e.writeString((oo as oostring).value);
+      return;
+      case 61:
+      e.writeTag(61, 0);
+      e.writeNumberAsVarint((oo as ooint).value);
+      return;
+    }
+  }
+}
+
 export namespace example1 {
   export const enum AEnum2 {
     C = 0,
