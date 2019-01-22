@@ -12,3 +12,11 @@ go_binary(
     ],
     out = 'protoc-gen-ts',
 )
+
+filegroup(
+    name = "ts_library",
+    srcs = glob([
+        "lib/**/*.ts",
+    ]),
+)
+

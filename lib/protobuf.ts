@@ -20,8 +20,10 @@ export function Marshal(m: Message): Uint8Array {
 }
 
 export class OneofNotSet {
+  static readonly singleton = new OneofNotSet();
   static readonly kind = 0;
   readonly kind = 0;
+  private constructor() {}
 }
 
 // TODO move to a grpc package.

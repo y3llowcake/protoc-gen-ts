@@ -58,8 +58,7 @@ function example1(): e1pb.example1 {
 
   e.outoforder = 1n;
 
-  // e.aoneof = new \foo\bar\example1pb_oostring("oneofstring");
-  e.oostring = "oneofstring";
+  e.aoneof = new e1pb.example1.aoneof.oostring("oneofstring");
   return e;
 }
 

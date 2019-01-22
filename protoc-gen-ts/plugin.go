@@ -167,8 +167,10 @@ func (m *moduleResolver) ToRelativeModule(fdp *desc.FileDescriptorProto) *modRef
 }
 
 type oneof struct {
-	odp    *desc.OneofDescriptorProto
-	fields []*field
+	odp         *desc.OneofDescriptorProto
+	fields      []*field
+	fqNamespace string
+	typeName    string
 }
 
 type field struct {
@@ -389,7 +391,15 @@ func (f field) writeDecoder(w *writer, dec, wt string) {
 			w.p("this.%s.push(obj)", f.varName())
 			w.p("}")
 		} else {
-			// todo isoneof
+			if f.isOneofMember() {
+				oo := f.oneof
+				w.p("{")
+				w.p("let msg = new %s();", f.typeTsName)
+				w.p("msg.MergeFrom(%s.readDecoder());", dec)
+				w.p("this.%s = new %s.%s(msg);", oo.odp.GetName(), oo.fqNamespace, f.varName())
+				w.p("}")
+				return
+			}
 			w.p("if (this.%s == null) this.%s = new %s();", f.varName(), f.varName(), f.typeTsName)
 			w.p("this.%s.MergeFrom(%s.readDecoder());", f.varName(), dec)
 		}
@@ -432,7 +442,11 @@ func (f field) writeDecoder(w *writer, dec, wt string) {
 	default:
 		panic(fmt.Errorf("unknown reader for fd type: %+v", f.fd.GetType()))
 	}
-	//if f.isOneOfMember() {
+	if f.isOneofMember() {
+		oo := f.oneof
+		w.p("this.%s = new %s.%s(%s);", oo.odp.GetName(), oo.fqNamespace, f.varName(), reader)
+		return
+	}
 	if !f.isRepeated() {
 		w.p("this.%s = %s;", f.varName(), reader)
 		return
@@ -582,29 +596,27 @@ func writeOneof(w *writer, oo *oneof, libMod *modRef, prefixNames []string) {
 	}
 
 	classNames := []string{fmt.Sprintf("%s.OneofNotSet", libMod.alias)}
-	classNames = []string{}
 	for _, field := range oo.fields {
-		w.p("export class %s {", field.fd.GetName())
+		w.p("export class %s {", field.varName())
 		w.p("static readonly kind = %d;", field.fd.GetNumber())
 		w.p("readonly kind = %d;", field.fd.GetNumber())
 		w.p("value: %s;", field.labeledType())
 		w.p("constructor(v: %s) {", field.labeledType())
 		w.p("this.value = v;")
 		w.p("}")
-		classNames = append(classNames, field.fd.GetName())
+		classNames = append(classNames, field.varName())
 		w.p("}")
 		w.ln()
 
 	}
 
-	typeName := oo.odp.GetName() + "_oneof_t"
 	union := strings.Join(classNames, " | ")
-	w.p("type %s = %s;", typeName, union)
+	w.p("export type %s = %s;", oo.typeName, union)
 	w.ln()
-	w.p("function WriteTo(oo: %s, e: %s.Internal.Encoder):void {", typeName, libMod.alias)
+	w.p("export function WriteTo(oo: %s, e: %s.Internal.Encoder):void {", oo.typeName, libMod.alias)
 	w.p("switch (oo.kind) {")
 	for _, f := range oo.fields {
-		value := fmt.Sprintf("(oo as %s).value", f.fd.GetName())
+		value := fmt.Sprintf("(oo as %s).value", f.varName())
 		w.p("case %d:", f.fd.GetNumber())
 
 		if f.isMessage() {
@@ -663,8 +675,10 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 	oneofs := []*oneof{}
 	for i, od := range dp.OneofDecl {
 		oo := &oneof{
-			odp:    od,
-			fields: oneofFields[int32(i)],
+			odp:         od,
+			fields:      oneofFields[int32(i)],
+			typeName:    "oneof_type",
+			fqNamespace: strings.Join(append(nextNames, od.GetName()), "."),
 		}
 		oneofs = append(oneofs, oo)
 	}
@@ -680,20 +694,29 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 		w.p("export namespace %s {", strings.Join(prefixNames, "."))
 	}
 
+	// Message
 	w.p("export class %s implements %s.Message {", dp.GetName(), libMod.alias)
 	for _, f := range fields {
-		//if f.isOneofMember() {
-		//	continue
-		//}
+		if f.isOneofMember() {
+			continue
+		}
 		w.p("%s: %s;", f.varName(), f.labeledType())
 	}
+	for _, oo := range oneofs {
+		w.p("%s: %s.%s;", oo.odp.GetName(), oo.fqNamespace, oo.typeName)
+	}
 	w.ln()
+
+	// Constructor
 	w.p("constructor() {")
 	for _, f := range fields {
-		//if f.isOneofMember() {
-		//	continue
-		//}
+		if f.isOneofMember() {
+			continue
+		}
 		w.p("this.%s = %s;", f.varName(), f.defaultValue())
+	}
+	for _, oo := range oneofs {
+		w.p("this.%s = %s.OneofNotSet.singleton;", oo.odp.GetName(), libMod.alias)
 	}
 	w.p("}") // constructor
 	w.ln()
@@ -721,15 +744,18 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 	// WriteTo
 	w.p("WriteTo(e: %s.Internal.Encoder): void {", libMod.alias)
 	for _, f := range fields {
-		// if f.isOneofMember() {
-		// continue
-		// }
+		if f.isOneofMember() {
+			continue
+		}
 		w.pdebug("maybe writing field %d, (%s)", f.fd.GetNumber(), f.fd.GetName())
 		f.writeEncoder(w, libMod, "e", false)
 		w.pdebug("maybe wrote field %d, (%s)", f.fd.GetNumber(), f.fd.GetName())
 	}
-	w.p("}")
+	for _, oo := range oneofs {
+		w.p("%s.WriteTo(this.%s, e);", oo.fqNamespace, oo.odp.GetName())
+	}
 
+	w.p("}") // WriteTo
 	w.p("}") // class
 
 	if len(prefixNames) > 0 {

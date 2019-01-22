@@ -65,8 +65,7 @@ export class example1 implements __pb__.Message {
   amap: Map<string, string>;
   amap2: Map<string, ___example2_pb.example2>;
   outoforder: bigint;
-  oostring: string;
-  ooint: number;
+  aoneof: example1.aoneof.oneof_type;
 
   constructor() {
     this.adouble = 0.0;
@@ -95,8 +94,7 @@ export class example1 implements __pb__.Message {
     this.amap = new Map<string, string>();
     this.amap2 = new Map<string, ___example2_pb.example2>();
     this.outoforder = 0n;
-    this.oostring = "";
-    this.ooint = 0;
+    this.aoneof = __pb__.OneofNotSet.singleton;
   }
 
   MergeFrom(d: __pb__.Internal.Decoder): void {
@@ -200,10 +198,10 @@ export class example1 implements __pb__.Message {
         this.outoforder = d.readVarintSigned();
         break;
         case 60:
-        this.oostring = d.readString();
+        this.aoneof = new example1.aoneof.oostring(d.readString());
         break;
         case 61:
-        this.ooint = d.readVarInt32();
+        this.aoneof = new example1.aoneof.ooint(d.readVarInt32());
         break;
         default:
         d.skipWireType(wt)
@@ -339,14 +337,7 @@ export class example1 implements __pb__.Message {
       e.writeTag(49, 0);
       e.writeVarint(this.outoforder);
     }
-    if (this.oostring !== "") {
-      e.writeTag(60, 2);
-      e.writeString(this.oostring);
-    }
-    if (this.ooint !== 0) {
-      e.writeTag(61, 0);
-      e.writeNumberAsVarint(this.ooint);
-    }
+    example1.aoneof.WriteTo(this.aoneof, e);
   }
 }
 
@@ -369,9 +360,9 @@ export namespace example1.aoneof {
     }
   }
 
-  type aoneof_oneof_t = oostring | ooint;
+  export type oneof_type = __pb__.OneofNotSet | oostring | ooint;
 
-  function WriteTo(oo: aoneof_oneof_t, e: __pb__.Internal.Encoder):void {
+  export function WriteTo(oo: oneof_type, e: __pb__.Internal.Encoder):void {
     switch (oo.kind) {
       case 60:
       e.writeTag(60, 2);
