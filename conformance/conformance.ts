@@ -26,26 +26,38 @@ function conformance(req: conf.ConformanceRequest): conf.ConformanceResponse {
     case "protobuf_test_messages.proto3.TestAllTypesProto3":
       break;
     default:
-      resp.skipped = "unsupported message type";
+      resp.result = new conf.ConformanceResponse.result.skipped(
+        "unsupported message type"
+      );
       return resp;
   }
 
-  if (req.json_payload != "") {
-    resp.skipped = "unsupported payload type";
-    return resp;
+  switch (req.payload.kind) {
+    case conf.ConformanceRequest.payload.protobuf_payload.kind:
+      break;
+    default:
+      resp.result = new conf.ConformanceResponse.result.skipped(
+        "unsupported payload type"
+      );
+      return resp;
   }
 
   if (req.requested_output_format != conf.WireFormat.PROTOBUF) {
-    resp.skipped = "unsupported output format";
+    resp.result = new conf.ConformanceResponse.result.skipped(
+      "unsupported output format"
+    );
     return resp;
   }
 
   let m = new tm3.TestAllTypesProto3();
   try {
-    pb.Unmarshal(req.protobuf_payload, m);
-    resp.protobuf_payload = pb.Marshal(m);
+    let payload = req.payload as conf.ConformanceRequest.payload.protobuf_payload;
+    pb.Unmarshal(payload.value, m);
+    resp.result = new conf.ConformanceResponse.result.protobuf_payload(
+      pb.Marshal(m)
+    );
   } catch (e) {
-    resp.parse_error = e;
+    resp.result = new conf.ConformanceResponse.result.parse_error(e);
     log("parse error: " + e);
   }
   return resp;
