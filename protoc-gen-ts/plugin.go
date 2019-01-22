@@ -66,9 +66,6 @@ func gen(req *ppb.CodeGeneratorRequest) *ppb.CodeGeneratorResponse {
 
 	rootns := NewEmptyNamespace()
 	for _, fdp := range req.ProtoFile {
-		if fdp.GetSyntax() != "proto3" {
-			panic(fmt.Errorf("unsupported syntax: %s in file %s", fdp.GetSyntax(), fdp.GetName()))
-		}
 		rootns.Parse(fdp)
 		// panic(rootns.PrettyPrint()) // for debuggling
 
@@ -104,6 +101,10 @@ func tsFileName(fdp *desc.FileDescriptorProto) string {
 const importPlaceholder = "!!!IMPORT_PLACEHOLDER!!!"
 
 func writeFile(w *writer, fdp *desc.FileDescriptorProto, rootNs *Namespace, libMod *modRef, genService bool) string {
+	if fdp.GetSyntax() != "proto3" {
+		panic(fmt.Errorf("unsupported syntax: %s in file %s", fdp.GetSyntax(), fdp.GetName()))
+	}
+
 	ns := rootNs.FindFullyQualifiedNamespace("." + fdp.GetPackage())
 	mr := &moduleResolver{fdp, map[string]*modRef{}}
 	if ns == nil {
