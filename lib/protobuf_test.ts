@@ -17,7 +17,7 @@ function testVarintSignedNumber(n: number, d: number[]): void {
   let got = new pb.Internal.Decoder(ua).readVarintSignedAsNumber();
   assertEqual(got, n, `readVarintSignedAsNumber ${n}`);
   let enc = new pb.Internal.Encoder();
-  enc.writeNumberAsVarint(n);
+  enc.writeNumberAsVarintSigned(n);
   let got2 = enc.buffer();
   assertEqual(got2, ua, `writeNumberAsVarintSigned ${n}`);
 }

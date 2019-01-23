@@ -85,7 +85,11 @@ func gen(req *ppb.CodeGeneratorRequest) *ppb.CodeGeneratorResponse {
 		}
 
 		imports := writeFile(w, fdp, rootns, libMod, optGenService)
-		content := strings.Replace(b.String(), importPlaceholder, imports, 1)
+		beforeReplace := b.String()
+		if strings.Contains(beforeReplace, "__long.") {
+			imports = imports + "import * as __long from \"long\"\n"
+		}
+		content := strings.Replace(beforeReplace, importPlaceholder, imports, 1)
 		f.Content = proto.String(content)
 		resp.File = append(resp.File, f)
 	}
@@ -245,7 +249,7 @@ func (f field) tsType() string {
 		desc.FieldDescriptorProto_TYPE_SINT64,
 		desc.FieldDescriptorProto_TYPE_FIXED64,
 		desc.FieldDescriptorProto_TYPE_SFIXED64:
-		return "bigint"
+		return "__long"
 	case desc.FieldDescriptorProto_TYPE_INT32,
 		desc.FieldDescriptorProto_TYPE_UINT32,
 		desc.FieldDescriptorProto_TYPE_SINT32,
@@ -281,11 +285,12 @@ func (f field) defaultValue() string {
 	case desc.FieldDescriptorProto_TYPE_BYTES:
 		return `new Uint8Array(0)`
 	case desc.FieldDescriptorProto_TYPE_INT64,
-		desc.FieldDescriptorProto_TYPE_UINT64,
 		desc.FieldDescriptorProto_TYPE_SINT64,
-		desc.FieldDescriptorProto_TYPE_FIXED64,
 		desc.FieldDescriptorProto_TYPE_SFIXED64:
-		return "0n"
+		return "__long.ZERO"
+	case desc.FieldDescriptorProto_TYPE_UINT64,
+		desc.FieldDescriptorProto_TYPE_FIXED64:
+		return "__long.UZERO"
 	case desc.FieldDescriptorProto_TYPE_INT32,
 		desc.FieldDescriptorProto_TYPE_UINT32,
 		desc.FieldDescriptorProto_TYPE_SINT32,
