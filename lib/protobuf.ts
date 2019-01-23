@@ -1,3 +1,6 @@
+import * as Long from "long";
+import { fromBits as LongFromBits, fromInt as LongFromInt } from "long";
+
 export class ProtobufError extends Error {
   constructor(message: string) {
     super(message);
@@ -82,31 +85,31 @@ export namespace Internal {
       this.buf = buf;
     }
 
-    // The output of this is always unsigned and is not clamped to 64 bits.
-    readVarint(): bigint {
-      let val = 0n;
-      let shift = 0n;
+    // The output of this is always unsigned.
+    readVarint(): Long {
+      let val = Long.UZERO;
+      let shift = 0;
       while (true) {
         if (this.isEOF()) {
           throw new ProtobufError("buffer overrun while reading varint-128");
         }
-        let c = BigInt(this.buf[this.offset]);
+        let c = this.buf[this.offset];
         this.offset++;
-        val += (c & 127n) << shift;
-        shift += 7n;
-        if (c < 128n) {
+        val = val.add(LongFromBits(c & 127, 0, true).shiftLeft(shift));
+        shift += 7;
+        if (c < 128) {
           break;
         }
       }
       return val;
     }
 
-    readVarintSigned(): bigint {
-      return BigInt.asIntN(64, this.readVarint());
+    readVarintSigned(): Long {
+      return this.readVarint().toSigned();
     }
 
     readVarintSignedAsNumber(): number {
-      return Number(this.readVarintSigned());
+      return this.readVarintSigned().toNumber();
     }
 
     // This function will behave weirdly when parsing varints that exceed 31
@@ -140,11 +143,11 @@ export namespace Internal {
     }
 
     readVarUint32(): number {
-      return Number(this.readVarint() & 0xffffffffn);
+      return this.readVarint().getLowBitsUnsigned();
     }
 
     readVarInt32(): number {
-      return Number(BigInt.asIntN(32, this.readVarint() & 0xffffffffn));
+      return this.readVarint().getLowBits();
     }
 
     readZigZag32(): number {
@@ -154,20 +157,23 @@ export namespace Internal {
       return ((i >> 1) & 0x7fffffff) ^ -(i & 1);
     }
 
-    readZigZag64(): bigint {
+    readZigZag64(): Long {
       let i = this.readVarint();
-      return ((i >> 1n) & 0x7fffffffffffffffn) ^ -(i & 1n);
+      //  return ((i >> 1) & 0x7fffffffffffffff) ^ -(i & 1);
+      return i
+        .shiftRight(1)
+        .and(LongFromBits(0xffffffff, 0x7fffffff, true))
+        .xor(i.negate().and(1))
+        .toSigned();
     }
 
-    readInt64(): bigint {
-      return BigInt.asIntN(64, this.readUint64());
+    readInt64(): Long {
+      return this.readUint64().toSigned();
     }
 
-    readUint64(): bigint {
+    readUint64(): Long {
       let dv = this.readView(8);
-      return (
-        BigInt(dv.getUint32(0, true)) | (BigInt(dv.getUint32(4, true)) << 32n)
-      );
+      return LongFromBits(dv.getUint32(0, true), dv.getUint32(4, true), true);
     }
 
     readUint32(): number {
@@ -286,7 +292,7 @@ export namespace Internal {
     }
 
     maybeGrow(need: number): void {
-      if (this.offset + need < this.buf.byteLength) {
+      if (this.offset + need <= this.buf.byteLength) {
         return;
       }
       // TODO ArrayBuffer.transfer
@@ -313,13 +319,11 @@ export namespace Internal {
       this.offset = 0;
     }
 
-    writeVarint(i: bigint): void {
-      // We must unsigned any negative input first.
-      i = BigInt.asUintN(64, i);
+    writeVarint(i: Long): void {
       while (true) {
-        let b = Number(i & 0x7fn);
-        i = i >> 7n;
-        if (i == 0n) {
+        let b = i.and(0x7f).toNumber();
+        i = i.shiftRightUnsigned(7);
+        if (i.isZero()) {
           this.buf.write(b);
           return;
         }
@@ -327,8 +331,23 @@ export namespace Internal {
       }
     }
 
-    writeNumberAsVarint(n: number): void {
-      this.writeVarint(BigInt(n));
+    writeNumberAsVarint(i: number): void {
+      while (true) {
+        let b = i & 0x7f;
+        i = i >>> 7;
+        if (i == 0) {
+          this.buf.write(b);
+          return;
+        }
+        this.buf.write(b | 0x80); // set the top bit.
+      }
+      //this.writeVarint(LongFromBits(n, 0, true));
+    }
+
+    writeNumberAsVarintSigned(n: number): void {
+      // this.writeNumberAsVarint(n);
+      // TODO optimize the shit out of this.
+      this.writeVarint(LongFromInt(n, false));
     }
 
     writeTag(fn: number, wt: number): void {
@@ -365,23 +384,28 @@ export namespace Internal {
     }
 
     writeZigZag32(v: number): void {
-      let i = BigInt(v & 0xffffffff);
-      i = ((i << 1n) ^ ((i << 32n) >> 63n)) & 0xffffffffn;
+      let i = LongFromBits(v & 0xffffffff, 0, true);
+      // i = ((i << 1n) ^ ((i << 32n) >> 63n)) & 0xffffffffn;
+      i = i
+        .shiftLeft(1)
+        .xor(i.shiftLeft(32).shiftRight(63))
+        .and(0xffffffff);
       this.writeVarint(i);
     }
 
-    writeZigZag64(v: bigint): void {
-      this.writeVarint((v << 1n) ^ (v >> 63n));
+    writeZigZag64(v: Long): void {
+      // this.writeVarint((v << 1n) ^ (v >> 63n));
+      this.writeVarint(v.shiftLeft(1).xor(v.shiftRight(63)));
     }
 
-    writeInt64(v: bigint): void {
-      this.writeUint64(BigInt.asUintN(64, v));
+    writeInt64(v: Long): void {
+      this.writeUint64(v.toUnsigned());
     }
 
-    writeUint64(v: bigint): void {
+    writeUint64(v: Long): void {
       let dv = this.buf.writeView(8);
-      dv.setUint32(0, Number(v & 0xffffffffn), true);
-      dv.setUint32(4, Number(v >> 32n), true);
+      dv.setUint32(0, v.getLowBitsUnsigned(), true);
+      dv.setUint32(4, v.getHighBitsUnsigned(), true);
     }
 
     writeEncoder(e: Encoder, fn: number) {

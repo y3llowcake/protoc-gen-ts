@@ -3,6 +3,7 @@
 
 import * as __pb__ from "../../lib/protobuf"
 import * as ___example2_pb from "./example2_pb"
+import * as __long from "long"
 
 
 export const enum AEnum1 {
@@ -42,15 +43,15 @@ export class example1 implements __pb__.Message {
   adouble: number;
   afloat: number;
   aint32: number;
-  aint64: bigint;
+  aint64: __long;
   auint32: number;
-  auint64: bigint;
+  auint64: __long;
   asint32: number;
-  asint64: bigint;
+  asint64: __long;
   afixed32: number;
-  afixed64: bigint;
+  afixed64: __long;
   asfixed32: number;
-  asfixed64: bigint;
+  asfixed64: __long;
   abool: boolean;
   astring: string;
   abytes: Uint8Array;
@@ -58,28 +59,28 @@ export class example1 implements __pb__.Message {
   aenum2: example1.AEnum2;
   aenum22: ___example2_pb.AEnum2;
   manystring: string[];
-  manyint64: bigint[];
+  manyint64: __long[];
   aexample2: example1.example2 | null;
   aexample22: example2 | null;
   aexample23: ___example2_pb.example2 | null;
   amap: Map<string, string>;
   amap2: Map<string, ___example2_pb.example2>;
-  outoforder: bigint;
+  outoforder: __long;
   aoneof: example1.aoneof.oneof_type;
 
   constructor() {
     this.adouble = 0.0;
     this.afloat = 0.0;
     this.aint32 = 0;
-    this.aint64 = 0n;
+    this.aint64 = __long.ZERO;
     this.auint32 = 0;
-    this.auint64 = 0n;
+    this.auint64 = __long.UZERO;
     this.asint32 = 0;
-    this.asint64 = 0n;
+    this.asint64 = __long.ZERO;
     this.afixed32 = 0;
-    this.afixed64 = 0n;
+    this.afixed64 = __long.UZERO;
     this.asfixed32 = 0;
-    this.asfixed64 = 0n;
+    this.asfixed64 = __long.ZERO;
     this.abool = false;
     this.astring = "";
     this.abytes = new Uint8Array(0);
@@ -93,7 +94,7 @@ export class example1 implements __pb__.Message {
     this.aexample23 = null;
     this.amap = new Map<string, string>();
     this.amap2 = new Map<string, ___example2_pb.example2>();
-    this.outoforder = 0n;
+    this.outoforder = __long.ZERO;
     this.aoneof = __pb__.OneofNotSet.singleton;
   }
 
@@ -222,7 +223,7 @@ export class example1 implements __pb__.Message {
       e.writeTag(3, 0);
       e.writeNumberAsVarint(this.aint32);
     }
-    if (this.aint64 !== 0n) {
+    if (this.aint64 !== __long.ZERO) {
       e.writeTag(4, 0);
       e.writeVarint(this.aint64);
     }
@@ -230,7 +231,7 @@ export class example1 implements __pb__.Message {
       e.writeTag(5, 0);
       e.writeNumberAsVarint(this.auint32);
     }
-    if (this.auint64 !== 0n) {
+    if (this.auint64 !== __long.UZERO) {
       e.writeTag(6, 0);
       e.writeVarint(this.auint64);
     }
@@ -238,7 +239,7 @@ export class example1 implements __pb__.Message {
       e.writeTag(7, 0);
       e.writeZigZag32(this.asint32);
     }
-    if (this.asint64 !== 0n) {
+    if (this.asint64 !== __long.ZERO) {
       e.writeTag(8, 0);
       e.writeZigZag64(this.asint64);
     }
@@ -246,7 +247,7 @@ export class example1 implements __pb__.Message {
       e.writeTag(9, 5);
       e.writeUint32(this.afixed32);
     }
-    if (this.afixed64 !== 0n) {
+    if (this.afixed64 !== __long.UZERO) {
       e.writeTag(10, 1);
       e.writeUint64(this.afixed64);
     }
@@ -254,7 +255,7 @@ export class example1 implements __pb__.Message {
       e.writeTag(11, 5);
       e.writeInt32(this.asfixed32);
     }
-    if (this.asfixed64 !== 0n) {
+    if (this.asfixed64 !== __long.ZERO) {
       e.writeTag(12, 1);
       e.writeInt64(this.asfixed64);
     }
@@ -333,7 +334,7 @@ export class example1 implements __pb__.Message {
       obj.WriteTo(nested);
       e.writeEncoder(nested, 52);
     }
-    if (this.outoforder !== 0n) {
+    if (this.outoforder !== __long.ZERO) {
       e.writeTag(49, 0);
       e.writeVarint(this.outoforder);
     }

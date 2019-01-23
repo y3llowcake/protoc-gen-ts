@@ -4,6 +4,8 @@ import * as e1pb from "./gen-src/example1_pb";
 import * as e2pb from "./gen-src/example2_pb";
 
 import { diff } from "deep-diff";
+import * as Long from "long";
+import { fromInt } from "long";
 
 function repackFloat(n: number): number {
   let a = new Float32Array(1);
@@ -16,15 +18,15 @@ function example1(): e1pb.example1 {
   e.adouble = 13.37;
   e.afloat = repackFloat(100.1);
   e.aint32 = 1;
-  e.aint64 = 12n;
+  e.aint64 = fromInt(12);
   e.auint32 = 123;
-  e.auint64 = 1234n;
+  e.auint64 = fromInt(1234, true);
   e.asint32 = 12345;
-  e.asint64 = 123456n;
+  e.asint64 = fromInt(123456);
   e.afixed32 = 1234567;
-  e.afixed64 = 12345678n;
+  e.afixed64 = fromInt(12345678, true);
   e.asfixed32 = 123456789;
-  e.asfixed64 = -1234567890n;
+  e.asfixed64 = fromInt(-1234567890);
   e.abool = true;
   e.astring = "foobar";
   e.abytes = new TextEncoder().encode("hello world");
@@ -37,9 +39,9 @@ function example1(): e1pb.example1 {
   e.manystring.push("ms2");
   e.manystring.push("ms3");
 
-  e.manyint64.push(1n);
-  e.manyint64.push(2n);
-  e.manyint64.push(3n);
+  e.manyint64.push(fromInt(1));
+  e.manyint64.push(fromInt(2));
+  e.manyint64.push(fromInt(3));
 
   let e2 = new e1pb.example1.example2();
   e.aexample2 = e2;
@@ -56,7 +58,7 @@ function example1(): e1pb.example1 {
   e.amap.set("k1", "v1");
   e.amap.set("k2", "v2");
 
-  e.outoforder = 1n;
+  e.outoforder = fromInt(1);
 
   e.aoneof = new e1pb.example1.aoneof.oostring("oneofstring");
   return e;
