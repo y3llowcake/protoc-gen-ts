@@ -152,6 +152,7 @@ export namespace Internal {
 
     readZigZag32(): number {
       // TODO confirm use of readVarintAsNumber is safe here.
+      // TODO optmize: https://gist.github.com/mfuerstenau/ba870a29e16536fdbaba
       let i = this.readVarintAsNumber();
       i |= i & 0xffffffff;
       return ((i >> 1) & 0x7fffffff) ^ -(i & 1);
@@ -159,12 +160,7 @@ export namespace Internal {
 
     readZigZag64(): Long {
       let i = this.readVarint();
-      //  return ((i >> 1) & 0x7fffffffffffffff) ^ -(i & 1);
-      return i
-        .shiftRight(1)
-        .and(LongFromBits(0xffffffff, 0x7fffffff, true))
-        .xor(i.negate().and(1))
-        .toSigned();
+			return i.shiftRightUnsigned(1).xor(i.and(Long.ONE).neg()).toSigned();
     }
 
     readInt64(): Long {
