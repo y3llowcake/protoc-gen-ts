@@ -1,5 +1,5 @@
 import * as Long from "long";
-import { fromBits as LongFromBits, fromInt as LongFromInt } from "long";
+import { fromBits as LongFromBits } from "long";
 
 export class ProtobufError extends Error {
   constructor(message: string) {
@@ -109,7 +109,7 @@ export namespace Internal {
     }
 
     readVarintSignedAsNumber(): number {
-      return this.readVarintSigned().toNumber();
+      return this.readVarintSigned().getLowBits();
     }
 
     // This function will behave weirdly when parsing varints that exceed 31
@@ -321,7 +321,7 @@ export namespace Internal {
 
     writeVarint(i: Long): void {
       while (true) {
-        let b = i.and(0x7f).toNumber();
+        let b = i.getLowBits() & 0x7f;
         i = i.shiftRightUnsigned(7);
         if (i.isZero()) {
           this.buf.write(b);
@@ -345,9 +345,7 @@ export namespace Internal {
     }
 
     writeNumberAsVarintSigned(n: number): void {
-      // this.writeNumberAsVarint(n);
-      // TODO optimize the shit out of this.
-      this.writeVarint(LongFromInt(n, false));
+      this.writeVarint(LongFromBits(n, n < 0 ? -1 : 0, false));
     }
 
     writeTag(fn: number, wt: number): void {
