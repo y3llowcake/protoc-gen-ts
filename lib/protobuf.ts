@@ -109,8 +109,25 @@ export namespace Internal {
       return Number(this.readVarintSigned());
     }
 
+    // This function will behave weirdly when parsing varints that exceed 31
+    // bits. Use very carefully. The max field number is 2^29-1, so it is safe
+    // for that use case.
     readVarintAsNumber(): number {
-      return Number(this.readVarint());
+      let val = 0;
+      let shift = 0;
+      while (true) {
+        if (this.isEOF()) {
+          throw new ProtobufError("buffer overrun while reading varint-128");
+        }
+        let c = this.buf[this.offset];
+        this.offset++;
+        val += (c & 127) << shift;
+        shift += 7;
+        if (c < 128) {
+          break;
+        }
+      }
+      return val;
     }
 
     readTag(): [number, number] {
@@ -131,6 +148,7 @@ export namespace Internal {
     }
 
     readZigZag32(): number {
+      // TODO confirm use of readVarintAsNumber is safe here.
       let i = this.readVarintAsNumber();
       i |= i & 0xffffffff;
       return ((i >> 1) & 0x7fffffff) ^ -(i & 1);
