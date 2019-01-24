@@ -215,7 +215,11 @@ export namespace Internal {
     }
 
     readDecoder(): Decoder {
-      let dv = this.readView(this.readVarintAsNumber());
+      let len = this.readVarintAsNumber();
+      if (len == 0) {
+        return new Decoder(new Uint8Array(0));
+      }
+      let dv = this.readView(len);
       let ua = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
       return new Decoder(ua);
     }
