@@ -2,10 +2,12 @@ import * as pb from "./../lib/protobuf";
 import * as conf from "./gen-src/third_party/google/protobuf/conformance/conformance_pb";
 import * as tm3 from "./gen-src/google/protobuf/test_messages_proto3_pb";
 
-var logging = false;
+var debugLogging = false;
 
-function log(s: string): void {
-  // console.error("[CONFORMANCE] " + s);
+function log(...a: any[]): void {
+  if (debugLogging) {
+    console.error("[CONFORMANCE]", ...a);
+  }
 }
 
 function write(a: Uint8Array): void {
@@ -57,14 +59,14 @@ function conformance(req: conf.ConformanceRequest): conf.ConformanceResponse {
     );
   } catch (e) {
     resp.result = new conf.ConformanceResponse.result.parse_error(e);
-    log("parse error: " + e);
+    log("parse error:" + e);
   }
   return resp;
 }
 
 function remarshal(m: pb.Message, raw: Uint8Array): Uint8Array {
   pb.Unmarshal(raw, m);
-  log("after unmarshal: " + m);
+  log("after unmarshal:", m);
   return pb.Marshal(m);
 }
 
@@ -86,14 +88,15 @@ function unescapeC(s: string): Uint8Array {
 }
 
 if (process.argv.length > 2) {
-  console.log("command line mode", process.argv);
+  debugLogging = true;
+  log("command line mode:", process.argv);
   let input = process.argv[2];
-  console.log("input: ", input);
+  log("input:", input);
   let raw = unescapeC(input);
-  console.log("raw input: ", raw);
+  log("raw input:", raw);
   let m = new tm3.TestAllTypesProto3();
   let out = remarshal(m, raw);
-  console.log("out: ", out);
+  log("out:", out);
   process.exit(0);
 }
 
