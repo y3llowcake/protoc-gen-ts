@@ -87,7 +87,7 @@ func gen(req *ppb.CodeGeneratorRequest) *ppb.CodeGeneratorResponse {
 		imports := writeFile(w, fdp, rootns, libMod, optGenService)
 		beforeReplace := b.String()
 		if strings.Contains(beforeReplace, "__long.") {
-			imports = imports + "import * as __long from \"long\"\n"
+			imports = imports + "import * as __long from 'long'\n"
 		}
 		content := strings.Replace(beforeReplace, importPlaceholder, imports, 1)
 		f.Content = proto.String(content)
@@ -137,9 +137,9 @@ func writeFile(w *writer, fdp *desc.FileDescriptorProto, rootNs *Namespace, libM
 		}
 	}
 
-	imports := fmt.Sprintf("import * as %s from \"%s\"\n", libMod.alias, libMod.path)
+	imports := fmt.Sprintf("import * as %s from '%s'\n", libMod.alias, libMod.path)
 	for _, mod := range mr.references {
-		imports += fmt.Sprintf("import * as %s from \"%s\"\n", mod.alias, mod.path)
+		imports += fmt.Sprintf("import * as %s from '%s'\n", mod.alias, mod.path)
 	}
 	return imports
 }
