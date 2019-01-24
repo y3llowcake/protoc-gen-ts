@@ -196,12 +196,20 @@ export namespace Internal {
     }
 
     readString(): string {
-      let dv = this.readView(this.readVarintAsNumber());
+      let len = this.readVarintAsNumber();
+      if (len == 0) {
+        return "";
+      }
+      let dv = this.readView(len);
       return new TextDecoder("utf-8").decode(dv);
     }
 
     readBytes(): Uint8Array {
-      let dv = this.readView(this.readVarintAsNumber());
+      let len = this.readVarintAsNumber();
+      if (len == 0) {
+        return new Uint8Array(0);
+      }
+      let dv = this.readView(len);
       let buf = dv.buffer.slice(dv.byteOffset, dv.byteOffset + dv.byteLength);
       return new Uint8Array(buf);
     }
@@ -212,6 +220,7 @@ export namespace Internal {
       return new Decoder(ua);
     }
 
+    // len should be > 0.
     readView(len: number): DataView {
       if (this.isEOF()) {
         throw new ProtobufError("buffer overrun while reading raw");

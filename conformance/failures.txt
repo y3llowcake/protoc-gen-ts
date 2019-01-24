@@ -1,4 +1,2 @@
-Recommended.Proto3.ProtobufInput.OneofZeroBytes.ProtobufOutput
 Recommended.Proto3.ProtobufInput.OneofZeroMessage.ProtobufOutput
-Recommended.Proto3.ProtobufInput.OneofZeroString.ProtobufOutput
 Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
