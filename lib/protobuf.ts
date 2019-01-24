@@ -160,7 +160,10 @@ export namespace Internal {
 
     readZigZag64(): Long {
       let i = this.readVarint();
-			return i.shiftRightUnsigned(1).xor(i.and(Long.ONE).neg()).toSigned();
+      return i
+        .shiftRightUnsigned(1)
+        .xor(i.and(Long.ONE).neg())
+        .toSigned();
     }
 
     readInt64(): Long {
