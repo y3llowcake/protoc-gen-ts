@@ -238,7 +238,8 @@ export namespace Internal {
           this.offset += 8;
           break;
         case 2:
-          this.offset += this.readVarintAsNumber();
+          let z = this.readVarintAsNumber();
+          this.offset += z;
           break;
         case 5:
           this.offset += 4;

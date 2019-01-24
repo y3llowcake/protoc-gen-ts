@@ -1,7 +1,4 @@
 Recommended.Proto3.ProtobufInput.OneofZeroBytes.ProtobufOutput
 Recommended.Proto3.ProtobufInput.OneofZeroMessage.ProtobufOutput
 Recommended.Proto3.ProtobufInput.OneofZeroString.ProtobufOutput
-Required.Proto3.ProtobufInput.PrematureEofInDelimitedDataForUnknownValue.BYTES
-Required.Proto3.ProtobufInput.PrematureEofInDelimitedDataForUnknownValue.MESSAGE
-Required.Proto3.ProtobufInput.PrematureEofInDelimitedDataForUnknownValue.STRING
 Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
