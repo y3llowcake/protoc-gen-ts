@@ -52,9 +52,8 @@ function conformance(req: conf.ConformanceRequest): conf.ConformanceResponse {
   let m = new tm3.TestAllTypesProto3();
   try {
     let payload = req.payload as conf.ConformanceRequest.payload.protobuf_payload;
-    pb.Unmarshal(payload.value, m);
     resp.result = new conf.ConformanceResponse.result.protobuf_payload(
-      pb.Marshal(m)
+      remarshal(m, payload.value)
     );
   } catch (e) {
     resp.result = new conf.ConformanceResponse.result.parse_error(e);
@@ -63,8 +62,38 @@ function conformance(req: conf.ConformanceRequest): conf.ConformanceResponse {
   return resp;
 }
 
+function remarshal(m: pb.Message, raw: Uint8Array): Uint8Array {
+  pb.Unmarshal(raw, m);
+  log("after unmarshal: " + m);
+  return pb.Marshal(m);
+}
+
+function unescapeC(s: string): Uint8Array {
+  // Inputs are ASCII or \nnn where nnn is octal.
+  let nums = [];
+  for (let i = 0; i < s.length; i++) {
+    let c = s.charAt(i);
+    let n = 0;
+    if (c === "\\") {
+      n = parseInt(s.substring(i + 1, i + 5), 8);
+      i += 3;
+    } else {
+      n = c.charCodeAt(0);
+    }
+    nums.push(n);
+  }
+  return Uint8Array.from(nums);
+}
+
 if (process.argv.length > 2) {
   console.log("command line mode", process.argv);
+  let input = process.argv[2];
+  console.log("input: ", input);
+  let raw = unescapeC(input);
+  console.log("raw input: ", raw);
+  let m = new tm3.TestAllTypesProto3();
+  let out = remarshal(m, raw);
+  console.log("out: ", out);
   process.exit(0);
 }
 
@@ -73,6 +102,7 @@ process.stdin.on("end", () => {
   log("eof received; fin");
   process.exit(0);
 });
+
 // https://github.com/protocolbuffers/protobuf/blob/master/conformance/conformance_test_runner.cc
 var buf = Buffer.alloc(0);
 process.stdin.on("data", chunk => {
