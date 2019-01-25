@@ -55,7 +55,8 @@ export namespace Grpc {
     public grpc_code: Code;
     public grpc_message: string;
     constructor(code: Code, msg: string) {
-      super(`grpc exception: ${code}; ${msg}`);
+      let name = Grpc.Code[code];
+      super(`grpc error: ${name} (${code}); ${msg}`);
       this.grpc_code = code;
       this.grpc_message = msg;
     }
