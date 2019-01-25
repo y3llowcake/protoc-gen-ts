@@ -4,7 +4,6 @@ import * as e1pb from "./gen-src/example1_pb";
 import * as e2pb from "./gen-src/example2_pb";
 
 import { diff } from "deep-diff";
-import * as Long from "long";
 import { fromInt } from "long";
 
 function repackFloat(n: number): number {

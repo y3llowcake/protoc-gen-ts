@@ -325,11 +325,9 @@ export namespace Internal {
 
   export class Encoder {
     private buf: Buffer;
-    private offset: number;
 
     constructor() {
       this.buf = new Buffer(64);
-      this.offset = 0;
     }
 
     writeVarint(i: Long): void {

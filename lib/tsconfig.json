@@ -1,11 +1,5 @@
 {
-  "compilerOptions": {
-    "target": "esnext",
-    "lib": ["es6", "dom"],
-    "module": "commonjs",
-    "strict": true,
-    "esModuleInterop": true,
-  },
+  "extends": "../tsconfig",
   "include": [
     "*.ts",
   ],
