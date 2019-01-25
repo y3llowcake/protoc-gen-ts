@@ -748,20 +748,24 @@ func writeDescriptor(w *writer, dp *desc.DescriptorProto, ns *Namespace, mr *mod
 	w.ln()
 
 	// WriteTo
-	w.p("WriteTo(e: %s.Internal.Encoder): void {", libMod.alias)
-	for _, f := range fields {
-		if f.isOneofMember() {
-			continue
+	if len(fields) < 1 {
+		w.p("WriteTo(_: %s.Internal.Encoder): void {}", libMod.alias)
+	} else {
+		w.p("WriteTo(e: %s.Internal.Encoder): void {", libMod.alias)
+		for _, f := range fields {
+			if f.isOneofMember() {
+				continue
+			}
+			w.pdebug("maybe writing field %d, (%s)", f.fd.GetNumber(), f.fd.GetName())
+			f.writeEncoder(w, libMod, "e", false)
+			w.pdebug("maybe wrote field %d, (%s)", f.fd.GetNumber(), f.fd.GetName())
 		}
-		w.pdebug("maybe writing field %d, (%s)", f.fd.GetNumber(), f.fd.GetName())
-		f.writeEncoder(w, libMod, "e", false)
-		w.pdebug("maybe wrote field %d, (%s)", f.fd.GetNumber(), f.fd.GetName())
-	}
-	for _, oo := range oneofs {
-		w.p("%s.WriteTo(this.%s, e);", oo.fqNamespace, oo.odp.GetName())
-	}
+		for _, oo := range oneofs {
+			w.p("%s.WriteTo(this.%s, e);", oo.fqNamespace, oo.odp.GetName())
+		}
 
-	w.p("}") // WriteTo
+		w.p("}") // WriteTo
+	}
 	w.p("}") // class
 
 	if len(prefixNames) > 0 {
