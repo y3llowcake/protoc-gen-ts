@@ -6,6 +6,12 @@ import * as e2pb from "./gen-src/example2_pb";
 import { diff } from "deep-diff";
 import { fromInt } from "long";
 
+import { TextDecoder, TextEncoder } from "util";
+
+// Can remove after node 11
+(global as any)["TextDecoder"] = TextDecoder;
+(global as any)["TextEncoder"] = TextEncoder;
+
 function repackFloat(n: number): number {
   let a = new Float32Array(1);
   a[0] = n;

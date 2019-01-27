@@ -2,6 +2,11 @@ import * as pb from "./../lib/protobuf";
 import * as conf from "./gen-src/third_party/google/protobuf/conformance/conformance_pb";
 import * as tm3 from "./gen-src/google/protobuf/test_messages_proto3_pb";
 
+// Can remove after node 11
+import { TextDecoder, TextEncoder } from "util";
+(global as any)["TextDecoder"] = TextDecoder;
+(global as any)["TextEncoder"] = TextEncoder;
+
 var debugLogging = false;
 
 function log(...a: any[]): void {
