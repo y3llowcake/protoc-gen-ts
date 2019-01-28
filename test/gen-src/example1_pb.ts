@@ -32,7 +32,7 @@ export class example2 implements __pb__.Message {
   }
 
   WriteTo(e: __pb__.Internal.Encoder): void {
-    if (this.aint32 !== 0) {
+    if (this.aint32 != 0) {
       e.writeTag(1, 0);
       e.writeNumberAsVarint(this.aint32);
     }
@@ -211,59 +211,59 @@ export class example1 implements __pb__.Message {
   }
 
   WriteTo(e: __pb__.Internal.Encoder): void {
-    if (this.adouble !== 0.0) {
+    if (this.adouble != 0.0) {
       e.writeTag(1, 1);
       e.writeDouble(this.adouble);
     }
-    if (this.afloat !== 0.0) {
+    if (this.afloat != 0.0) {
       e.writeTag(2, 5);
       e.writeFloat(this.afloat);
     }
-    if (this.aint32 !== 0) {
+    if (this.aint32 != 0) {
       e.writeTag(3, 0);
       e.writeNumberAsVarint(this.aint32);
     }
-    if (this.aint64 !== __long.ZERO) {
+    if (this.aint64 != __long.ZERO) {
       e.writeTag(4, 0);
       e.writeVarint(this.aint64);
     }
-    if (this.auint32 !== 0) {
+    if (this.auint32 != 0) {
       e.writeTag(5, 0);
       e.writeNumberAsVarint(this.auint32);
     }
-    if (this.auint64 !== __long.UZERO) {
+    if (this.auint64 != __long.UZERO) {
       e.writeTag(6, 0);
       e.writeVarint(this.auint64);
     }
-    if (this.asint32 !== 0) {
+    if (this.asint32 != 0) {
       e.writeTag(7, 0);
       e.writeZigZag32(this.asint32);
     }
-    if (this.asint64 !== __long.ZERO) {
+    if (this.asint64 != __long.ZERO) {
       e.writeTag(8, 0);
       e.writeZigZag64(this.asint64);
     }
-    if (this.afixed32 !== 0) {
+    if (this.afixed32 != 0) {
       e.writeTag(9, 5);
       e.writeUint32(this.afixed32);
     }
-    if (this.afixed64 !== __long.UZERO) {
+    if (this.afixed64 != __long.UZERO) {
       e.writeTag(10, 1);
       e.writeUint64(this.afixed64);
     }
-    if (this.asfixed32 !== 0) {
+    if (this.asfixed32 != 0) {
       e.writeTag(11, 5);
       e.writeInt32(this.asfixed32);
     }
-    if (this.asfixed64 !== __long.ZERO) {
+    if (this.asfixed64 != __long.ZERO) {
       e.writeTag(12, 1);
       e.writeInt64(this.asfixed64);
     }
-    if (this.abool !== false) {
+    if (this.abool != false) {
       e.writeTag(13, 0);
       e.writeBool(this.abool);
     }
-    if (this.astring !== "") {
+    if (this.astring != "") {
       e.writeTag(14, 2);
       e.writeString(this.astring);
     }
@@ -271,15 +271,15 @@ export class example1 implements __pb__.Message {
       e.writeTag(15, 2);
       e.writeBytes(this.abytes);
     }
-    if (this.aenum1 !== 0) {
+    if (this.aenum1 != 0) {
       e.writeTag(20, 0);
       e.writeNumberAsVarint(this.aenum1);
     }
-    if (this.aenum2 !== 0) {
+    if (this.aenum2 != 0) {
       e.writeTag(21, 0);
       e.writeNumberAsVarint(this.aenum2);
     }
-    if (this.aenum22 !== 0) {
+    if (this.aenum22 != 0) {
       e.writeTag(22, 0);
       e.writeNumberAsVarint(this.aenum22);
     }
@@ -296,7 +296,7 @@ export class example1 implements __pb__.Message {
     }
     {
       const msg = this.aexample2;
-      if (msg !== null) {
+      if (msg != null) {
         let nested = new __pb__.Internal.Encoder();
         msg.WriteTo(nested);
         e.writeEncoder(nested, 40)
@@ -304,7 +304,7 @@ export class example1 implements __pb__.Message {
     }
     {
       const msg = this.aexample22;
-      if (msg !== null) {
+      if (msg != null) {
         let nested = new __pb__.Internal.Encoder();
         msg.WriteTo(nested);
         e.writeEncoder(nested, 41)
@@ -312,7 +312,7 @@ export class example1 implements __pb__.Message {
     }
     {
       const msg = this.aexample23;
-      if (msg !== null) {
+      if (msg != null) {
         let nested = new __pb__.Internal.Encoder();
         msg.WriteTo(nested);
         e.writeEncoder(nested, 42)
@@ -334,7 +334,7 @@ export class example1 implements __pb__.Message {
       obj.WriteTo(nested);
       e.writeEncoder(nested, 52);
     }
-    if (this.outoforder !== __long.ZERO) {
+    if (this.outoforder != __long.ZERO) {
       e.writeTag(49, 0);
       e.writeVarint(this.outoforder);
     }
@@ -406,7 +406,7 @@ export namespace example1 {
     }
 
     WriteTo(e: __pb__.Internal.Encoder): void {
-      if (this.astring !== "") {
+      if (this.astring != "") {
         e.writeTag(1, 2);
         e.writeString(this.astring);
       }
@@ -441,11 +441,11 @@ export namespace example1 {
     }
 
     WriteTo(e: __pb__.Internal.Encoder): void {
-      if (this.key !== "") {
+      if (this.key != "") {
         e.writeTag(1, 2);
         e.writeString(this.key);
       }
-      if (this.value !== "") {
+      if (this.value != "") {
         e.writeTag(2, 2);
         e.writeString(this.value);
       }
@@ -481,13 +481,13 @@ export namespace example1 {
     }
 
     WriteTo(e: __pb__.Internal.Encoder): void {
-      if (this.key !== "") {
+      if (this.key != "") {
         e.writeTag(1, 2);
         e.writeString(this.key);
       }
       {
         const msg = this.value;
-        if (msg !== null) {
+        if (msg != null) {
           let nested = new __pb__.Internal.Encoder();
           msg.WriteTo(nested);
           e.writeEncoder(nested, 2)

@@ -30,7 +30,7 @@ export class example2 implements __pb__.Message {
   }
 
   WriteTo(e: __pb__.Internal.Encoder): void {
-    if (this.zomg !== 0) {
+    if (this.zomg != 0) {
       e.writeTag(1, 0);
       e.writeNumberAsVarint(this.zomg);
     }
@@ -61,7 +61,7 @@ export class refexample3 implements __pb__.Message {
   WriteTo(e: __pb__.Internal.Encoder): void {
     {
       const msg = this.funky;
-      if (msg !== null) {
+      if (msg != null) {
         let nested = new __pb__.Internal.Encoder();
         msg.WriteTo(nested);
         e.writeEncoder(nested, 1)

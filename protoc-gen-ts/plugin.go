@@ -533,7 +533,7 @@ func (f field) writeEncoder(w *writer, libMod *modRef, enc string, alwaysEmitDef
 			w.p("for (const msg of this.%s) {", f.varName())
 		} else {
 			w.p("const msg = this.%s;", f.varName())
-			w.p("if (msg !== null) {")
+			w.p("if (msg != null) {")
 		}
 		w.p("let nested = new %s.Internal.Encoder();", libMod.alias)
 		w.p("msg.WriteTo(nested);")
@@ -550,7 +550,7 @@ func (f field) writeEncoder(w *writer, libMod *modRef, enc string, alwaysEmitDef
 			if f.fd.GetType() == desc.FieldDescriptorProto_TYPE_BYTES {
 				w.p("if (this.%s.length != 0) {", f.varName())
 			} else {
-				w.p("if (this.%s !== %s) {", f.varName(), f.defaultValue())
+				w.p("if (this.%s != %s) {", f.varName(), f.defaultValue())
 			}
 		}
 		w.p(tagWriter + ";")
