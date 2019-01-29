@@ -66,7 +66,44 @@ function example1(): e1pb.example1 {
   e.outoforder = fromInt(1);
 
   e.aoneof = new e1pb.example1.aoneof.oostring("oneofstring");
+
+  e.longmap.set(fromInt(-33), "value");
   return e;
+}
+
+// ES6 maps are tricky to diff.
+function mapToObject(m1: Map<any, any>): Object {
+  let o = {} as any;
+  for (const [k, v] of m1) {
+    o[String(k)] = v;
+  }
+  return o;
+}
+
+function diffMap(exp: Map<any, any>, got: Map<any, any>, msg: string): void {
+  let diffs = diff(mapToObject(exp), mapToObject(got));
+  if (diffs) {
+    console.log(`${msg}; found diffs in map`);
+    console.table(diffs);
+    throw new Error("found diffs");
+  }
+}
+
+function diffMsg(exp: e1pb.example1, got: e1pb.example1, msg: string): void {
+  msg = `${msg}; exp (lhs) vs got (rhs)`;
+  let diffs = diff(exp, got);
+  if (diffs) {
+    console.log(msg);
+    console.table(diffs);
+    throw new Error("found diffs");
+  }
+  for (const prop in exp) {
+    let ep = (<any>exp)[prop];
+    let gp = (<any>got)[prop];
+    if (ep instanceof Map) {
+      diffMap(ep as Map<any, any>, gp as Map<any, any>, `${msg}; map ${prop}`);
+    }
+  }
 }
 
 let raw = fs.readFileSync("./gen-data/example1.pb.bin");
@@ -74,20 +111,10 @@ let ua = new Uint8Array(raw.buffer, raw.byteOffset, raw.length);
 let got = new e1pb.example1();
 pb.Unmarshal(ua, got);
 
-let diffs = diff(got, example1());
-if (diffs != null && diffs.length > 0) {
-  console.log("found diffs after Unmarshal; got (lhs) vs exp (rhs)");
-  console.table(diffs);
-  throw new Error("found diffs");
-}
+diffMsg(got, example1(), "after Unmarshal");
 
 ua = pb.Marshal(example1());
 got = new e1pb.example1();
 pb.Unmarshal(ua, got);
 
-diffs = diff(got, example1());
-if (diffs != null && diffs.length > 0) {
-  console.log("found diffs after Re-Marshal; got (lhs) vs exp (rhs)");
-  console.table(diffs);
-  throw new Error("found diffs");
-}
+diffMsg(got, example1(), "after remarshal");

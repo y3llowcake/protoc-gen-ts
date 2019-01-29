@@ -66,6 +66,7 @@ export class example1 implements __pb__.Message {
   amap: Map<string, string>;
   amap2: Map<string, ___example2_pb.example2>;
   outoforder: __long;
+  longmap: Map<__long, string>;
   aoneof: example1.aoneof.oneof_type;
 
   constructor() {
@@ -95,6 +96,7 @@ export class example1 implements __pb__.Message {
     this.amap = new Map<string, string>();
     this.amap2 = new Map<string, ___example2_pb.example2>();
     this.outoforder = __long.ZERO;
+    this.longmap = new Map<__long, string>();
     this.aoneof = __pb__.OneofNotSet.singleton;
   }
 
@@ -203,6 +205,13 @@ export class example1 implements __pb__.Message {
         break;
         case 61:
         this.aoneof = new example1.aoneof.ooint(d.readVarInt32());
+        break;
+        case 62:
+        {
+          let obj = new example1.LongmapEntry();
+          obj.MergeFrom(d.readDecoder());
+          this.longmap.set(obj.key, obj.value);
+        }
         break;
         default:
         d.skipWireType(wt)
@@ -337,6 +346,14 @@ export class example1 implements __pb__.Message {
     if (this.outoforder != __long.ZERO) {
       e.writeTag(49, 0);
       e.writeVarint(this.outoforder);
+    }
+    for (const [k, v] of this.longmap) {
+      let obj = new example1.LongmapEntry();
+      obj.key = k;
+      obj.value = v;
+      let nested = new __pb__.Internal.Encoder();
+      obj.WriteTo(nested);
+      e.writeEncoder(nested, 62);
     }
     example1.aoneof.WriteTo(this.aoneof, e);
   }
@@ -492,6 +509,45 @@ export namespace example1 {
           msg.WriteTo(nested);
           e.writeEncoder(nested, 2)
         }
+      }
+    }
+  }
+}
+
+export namespace example1 {
+  export class LongmapEntry implements __pb__.Message {
+    key: __long;
+    value: string;
+
+    constructor() {
+      this.key = __long.ZERO;
+      this.value = "";
+    }
+
+    MergeFrom(d: __pb__.Internal.Decoder): void {
+      while (!d.isEOF()) {
+        let [fn, wt] = d.readTag();
+        switch(fn) {
+          case 1:
+          this.key = d.readVarintSigned();
+          break;
+          case 2:
+          this.value = d.readString();
+          break;
+          default:
+          d.skipWireType(wt)
+        }
+      }
+    }
+
+    WriteTo(e: __pb__.Internal.Encoder): void {
+      if (this.key != __long.ZERO) {
+        e.writeTag(1, 0);
+        e.writeVarint(this.key);
+      }
+      if (this.value != "") {
+        e.writeTag(2, 2);
+        e.writeString(this.value);
       }
     }
   }

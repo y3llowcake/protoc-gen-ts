@@ -64,6 +64,8 @@ message example1 {
     int32 ooint = 61;
   }
 
+  map<int64, string> longmap = 62;
+
   // google.protobuf.Any anany = 80;
 }
 

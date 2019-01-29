@@ -47,3 +47,8 @@ amap {
 outoforder: 1
 
 oostring: "oneofstring"
+
+longmap {
+  key: -33
+  value: "value"
+}
