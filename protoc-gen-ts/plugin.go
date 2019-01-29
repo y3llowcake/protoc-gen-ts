@@ -89,6 +89,9 @@ func gen(req *ppb.CodeGeneratorRequest) *ppb.CodeGeneratorResponse {
 		if strings.Contains(beforeReplace, "__long.") {
 			imports = imports + "import * as __long from 'long'\n"
 		}
+		if strings.Contains(beforeReplace, "__longFromString(") {
+			imports = imports + "import {fromString as __longFromString } from 'long'\n"
+		}
 		content := strings.Replace(beforeReplace, importPlaceholder, imports, 1)
 		f.Content = proto.String(content)
 		resp.File = append(resp.File, f)
@@ -312,6 +315,36 @@ func (f field) defaultValue() string {
 	}
 }
 
+func (f field) mapKeyCoercedType() string {
+	t := f.tsType()
+	if t == "__long" {
+		return "string"
+	}
+	return t
+}
+
+func (f field) mapKeyCoerce(s string) string {
+	t := f.tsType()
+	if t == "__long" {
+		return s + ".toString()"
+	}
+	return s
+}
+
+func (f field) mapKeyUncoerce(s string) string {
+	t := f.tsType()
+	if t == "__long" {
+		unsigned := "false"
+		tt := f.fd.GetType()
+		if tt == desc.FieldDescriptorProto_TYPE_UINT64 ||
+			tt == desc.FieldDescriptorProto_TYPE_FIXED64 {
+			unsigned = "true"
+		}
+		return fmt.Sprintf("__longFromString(%s, %s)", s, unsigned)
+	}
+	return s
+}
+
 func (f field) isPacked() bool {
 	//if f.syn == SyntaxProto3 {
 	// TODO: technically you can disable packing?
@@ -323,7 +356,7 @@ func (f field) isPacked() bool {
 func (f field) labeledType() string {
 	if f.isMap {
 		k, v := f.mapFields()
-		return fmt.Sprintf("Map<%s, %s>", k.tsType(), v.tsType())
+		return fmt.Sprintf("Map<%s, %s>", k.mapKeyCoercedType(), v.tsType())
 	}
 	if f.isRepeated() {
 		return f.tsType() + "[]"
@@ -379,11 +412,12 @@ func (f field) writeDecoder(w *writer, dec, wt string) {
 		w.p("let obj = new %s();", f.typeTsName)
 		w.p("obj.MergeFrom(%s.readDecoder());", dec)
 
-		_, v := f.mapFields()
+		k, v := f.mapFields()
+		ck := k.mapKeyCoerce("obj.key")
 		if v.isMessage() {
-			w.p("this.%s.set(obj.key, obj.value == null ? new %s() : obj.value);", f.varName(), v.tsType())
+			w.p("this.%s.set(%s, obj.value == null ? new %s() : obj.value);", f.varName(), ck, v.tsType())
 		} else {
-			w.p("this.%s.set(obj.key, obj.value);", f.varName())
+			w.p("this.%s.set(%s, obj.value);", f.varName(), ck)
 		}
 		w.p("}")
 		// TODO
@@ -516,9 +550,10 @@ func (f field) primitiveWriter(enc string) (string, string) {
 
 func (f field) writeEncoder(w *writer, libMod *modRef, enc string, alwaysEmitDefaultValue bool) {
 	if f.isMap {
+		k, _ := f.mapFields()
 		w.p("for (const [k, v] of this.%s) {", f.varName())
 		w.p("let obj = new %s();", f.typeTsName)
-		w.p("obj.key = k;")
+		w.p("obj.key = %s;", k.mapKeyUncoerce("k"))
 		w.p("obj.value = v;")
 		w.p("let nested = new %s.Internal.Encoder();", libMod.alias)
 		w.p("obj.WriteTo(nested);")

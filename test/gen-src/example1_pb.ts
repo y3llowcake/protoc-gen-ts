@@ -4,6 +4,7 @@
 import * as __pb__ from '../../lib/protobuf'
 import * as ___example2_pb from './example2_pb'
 import * as __long from 'long'
+import {fromString as __longFromString } from 'long'
 
 
 export const enum AEnum1 {
@@ -66,7 +67,7 @@ export class example1 implements __pb__.Message {
   amap: Map<string, string>;
   amap2: Map<string, ___example2_pb.example2>;
   outoforder: __long;
-  longmap: Map<__long, string>;
+  longmap: Map<string, string>;
   aoneof: example1.aoneof.oneof_type;
 
   constructor() {
@@ -96,7 +97,7 @@ export class example1 implements __pb__.Message {
     this.amap = new Map<string, string>();
     this.amap2 = new Map<string, ___example2_pb.example2>();
     this.outoforder = __long.ZERO;
-    this.longmap = new Map<__long, string>();
+    this.longmap = new Map<string, string>();
     this.aoneof = __pb__.OneofNotSet.singleton;
   }
 
@@ -210,7 +211,7 @@ export class example1 implements __pb__.Message {
         {
           let obj = new example1.LongmapEntry();
           obj.MergeFrom(d.readDecoder());
-          this.longmap.set(obj.key, obj.value);
+          this.longmap.set(obj.key.toString(), obj.value);
         }
         break;
         default:
@@ -349,7 +350,7 @@ export class example1 implements __pb__.Message {
     }
     for (const [k, v] of this.longmap) {
       let obj = new example1.LongmapEntry();
-      obj.key = k;
+      obj.key = __longFromString(k, false);
       obj.value = v;
       let nested = new __pb__.Internal.Encoder();
       obj.WriteTo(nested);

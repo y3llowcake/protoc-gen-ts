@@ -67,7 +67,7 @@ function example1(): e1pb.example1 {
 
   e.aoneof = new e1pb.example1.aoneof.oostring("oneofstring");
 
-  e.longmap.set(fromInt(-33), "value");
+  e.longmap.set("-33", "value");
   return e;
 }
 
