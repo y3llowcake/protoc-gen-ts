@@ -503,9 +503,9 @@ export class ExampleServiceClient {
     this.cc = cc;
   }
 
-  async OneToTwo(ctx: __pb__.Grpc.Context, min: example1, ...co: __pb__.Grpc.CallOption[]): Promise<example2> {
+  async OneToTwo(min: example1, ...co: __pb__.Grpc.CallOption[]): Promise<example2> {
     let mout = new example2();
-    await this.cc.Invoke(ctx, '/foo.bar.ExampleService/OneToTwo', min, mout, ...co);
+    await this.cc.Invoke('/foo.bar.ExampleService/OneToTwo', min, mout, ...co);
     return mout;
   }
 }

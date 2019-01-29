@@ -837,9 +837,9 @@ func writeService(w *writer, sdp *desc.ServiceDescriptorProto, pkg string, ns *N
 			continue
 		}
 		w.ln()
-		w.p("async %s(ctx: %s.Grpc.Context, min: %s, ...co: %s.Grpc.CallOption[]): Promise<%s> {", m.TsName, libMod.alias, m.InputTsName, libMod.alias, m.OutputTsName)
+		w.p("async %s(min: %s, ...co: %s.Grpc.CallOption[]): Promise<%s> {", m.TsName, m.InputTsName, libMod.alias, m.OutputTsName)
 		w.p("let mout = new %s();", m.OutputTsName)
-		w.p("await this.cc.Invoke(ctx, '/%s/%s', min, mout, ...co);", fqname, m.mdp.GetName())
+		w.p("await this.cc.Invoke('/%s/%s', min, mout, ...co);", fqname, m.mdp.GetName())
 		w.p("return mout;")
 		w.p("}")
 	}

@@ -62,13 +62,10 @@ export namespace Grpc {
     }
   }
 
-  export interface Context {}
-
   export interface CallOption {}
 
   export interface ClientConn {
     Invoke(
-      ctx: Context,
       method: string,
       min: Message,
       mout: Message,
