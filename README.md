@@ -26,9 +26,10 @@ corresponding output is in the [test/gen-src](test/gen-src) directory.
 # TODOs
 
 - Proto3 JSON
+- Wellknown types
 - Benchmarking: Probably lots of optimizations to be had.
 - Internalize the long.js dependancy?
 - Embed Descriptors
 - Reflection
-- gRPC-Web
-- 
+- gRPC-Web?
+- Constructor arguments via a 'shape'
