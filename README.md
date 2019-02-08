@@ -1,6 +1,6 @@
 # protoc-gen-ts
 
-A Typescript Protocol Buffer implementation from the future :sparkles:
+A Typescript Protocol Buffer Implementation from the Future :sparkles:
 
 # Notable features / gotchas
 
@@ -9,14 +9,14 @@ A Typescript Protocol Buffer implementation from the future :sparkles:
 - Only supports proto3
 - Each .proto file generates a TS file, which is intended to be used as an es6
   module. Protobuf namespaces are ignored.
-- Maps use es6.Map in order to preserve compile time and runtime key types.
-  Their is an exception of 64 integer key types, which are converted to strings
-  so that equality comparison works correctly.
 - Currently uses long.js for 64 bit integer support.
-- Prefers direct property access over getters / setters.
+- Maps use es6.Map in order to preserve compile time and runtime key types.
+  There is an exception of 64 integer key types, which are converted to strings
+  so that equality comparison works correctly.
+- Uses Direct property access instead of getter / setter functions.
 - Oneofs are implemented as a Typescript 'union type'.
-- It passes the conformance suite.
 - Generates service stubs that are transport agnostic.
+- It passes the conformance suite.
 
 # Example output
 
