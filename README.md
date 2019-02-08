@@ -1,6 +1,6 @@
 # protoc-gen-ts
 
-A Typescript Protocol Buffer implementation from the future. :sparkles:
+A Typescript Protocol Buffer implementation from the future :sparkles:
 
 # Notable features / gotchas
 
