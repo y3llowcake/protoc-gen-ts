@@ -1,8 +1,0 @@
-*.swp
-bazel-*
-*.js
-node_modules
-package-lock.json
-conformance/gen-src
-conformance/failing_tests.txt
-conformance/succeeding_tests.txt
